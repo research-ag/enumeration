@@ -1,3 +1,6 @@
 [dependencies]
 base = "0.9.1"
 matchers = "https://github.com/kritzcreek/motoko-matchers#v1.3.0"
+
+[dev-dependencies]
+test = "1.0.1"

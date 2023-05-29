@@ -1,13 +1,17 @@
-# ... for Motoko
+# Enumeration for Motoko
 
 ## Overview
 
+Motoko general purpose libraries
+
+See documentation here: https://research-ag.github.io/enumeration/
+
 ### Links
 
-The package is published on [MOPS](https://mops.one/...) and [GitHub](https://github.com/research-ag/...).
+The package is published on [MOPS](https://mops.one/enumeration) and [GitHub](https://github.com/research-ag/enumeration).
 Please refer to the README on GitHub where it renders properly with formulas and tables.
 
-The API documentation can be found [here](https://mops.one/.../docs/lib) on Mops.
+The API documentation can be found [here](https://mops.one/enumeration/docs/lib) on Mops.
 
 For updates, help, questions, feedback and other requests related to this package join us on:
 
@@ -17,6 +21,8 @@ For updates, help, questions, feedback and other requests related to this packag
 
 ### Motivation
 
+Enumeration of `K`s in order they are added, i.e. bidirectional map from `K` to number it was added, and inverse.
+
 ### Interface
 
 ## Usage
@@ -25,12 +31,12 @@ For updates, help, questions, feedback and other requests related to this packag
 
 You need `mops` installed. In your project directory run:
 ```
-mops add <...>
+mops add enumeration
 ```
 
 In the Motoko source file import the package as one of:
 ```
-import .. "mo:..";
+import Enumeration "mo:enumeration";
 ```
 
 ### Example
@@ -40,7 +46,7 @@ import .. "mo:..";
 You need `moc` and `wasmtime` installed.
 Then run:
 ```
-git clone git@github.com:research-ag/....git
+git clone git@github.com:research-ag/enumeration.git
 make -C test
 ```
 

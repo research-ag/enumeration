@@ -5,3 +5,6 @@ description = ""
 repository = "https://github.com/research-ag/..."
 keywords = [ ]
 license = "Apache-2.0"
+
+[dev-dependencies]
+test = "1.0.1"
