@@ -26,7 +26,7 @@ The API documentation can be found [here](https://mops.one/enumeration/docs/lib)
 For updates, help, questions, feedback and other requests related to this package join us on:
 
 * [OpenChat group](https://oc.app/2zyqk-iqaaa-aaaar-anmra-cai)
-* [Twitter](https://twitter.com/mr,research,ag)
+* [Twitter](https://twitter.com/mr_research_ag)
 * [Dfinity forum](https://forum.dfinity.org/)
 
 ### Motivation
@@ -74,13 +74,13 @@ e.get(1); // -> "aaa"
 ### Build & test
 
 You should have `node >= 18.16`, `moc >= 0.9.0` and `dfx` installed.
-And the `DFX,MOC,PATH` variable should be set to the current `moc` location.
+And the `DFX_MOC_PATH` variable should be set to the current `moc` location.
 
 Then run:
 ```
 git clone git@github.com:research-ag/enumeration.git
 mops install
-DFX,MOC,PATH=<path-to-moc> mops test
+DFX_MOC_PATH=<path-to-moc> mops test
 ```
 
 ## Benchmarks
