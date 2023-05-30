@@ -41,4 +41,4 @@ jobs:
       - name: "test"
         run: |
           mops install
-          mops test
+          DFX_MOC_PATH=/home/runner/bin/moc mops test
