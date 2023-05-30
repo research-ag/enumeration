@@ -25,17 +25,16 @@ Canister services often track their users by principal.
 Per-user data is then stored in a tree or hashmap where key is the principal and the value is the user data.
 
 The motivation of this data structure is to enumerate the users in the order that they were registered.
-This gives each user a user number.
-The user data can then be stored in a Buffer or Vector instead of a tree where lookup by user number is fast.
+This result in a permanent user number for each user.
+Instead of a tree, the user data can then be stored in a linear structure such as Buffer or (Vector)[https://mops.one/vector] which has O(1) access.
 
-To this end, this data structure provides a bi-directional map from the parametrized key type `K` (e.g. `Principal`) to `Nat` (e.g. user number).
-The `Nat`s are consecutively numbered and assigned to the keys in the order that the keys are entered into the map ("enumerated").
-Keys can never be deleted from the map.
+To this end, the present data structure provides an "enumerated set" of keys where the key type `K` is a type parameter (e.g. `Principal`). 
+The set elements (keys) are consecutively numbered 0,1,2,.. in the order in which they are added.
+Keys cannot be deleted.
 
-Advantages of this approach are:
-
-* all tree-based lookups happening in the canister can be reduced to this one optimized data structure
-* all subsequent lookups can be made fast if based on user number
+The lookup from a key to its number is tree based. 
+However, the advantage of taking this approach is that it can be the only O(log n) lookup required in a canister.
+All subsequent accesses to data structures, by being based on the key's number instead of the key, can be O(1).
 
 ## Usage
 
@@ -53,16 +52,25 @@ import Enumeration "mo:enumeration";
 
 ### Example
 
+```
+let e = Enumeration.Enumeration<Blob>(Blob.compare, "");
+e.add("abc"); // -> 0
+e.add("aaa"); // -> 1
+e.add("abc"); // -> 0
+e.lookup("aaa"); // -> ?1
+e.get(0); // -> "abc"
+e.get(1); // -> "aaa"
+```
 ### Build & test
 
-You need `node >18.16`, `moc >0.9.0` and `dfx` installed.
+You should have `node >= 18.16`, `moc >= 0.9.0` and `dfx` installed.
 And the `DFX_MOC_PATH` variable should be set to the current `moc` location.
 
 Then run:
 ```
 git clone git@github.com:research-ag/enumeration.git
 mops install
-mops test
+DFX_MOC_PATH=<path-to-moc> mops test
 ```
 
 ## Benchmarks
@@ -75,6 +83,7 @@ The underlying data structure for the map `Nat -> K` is an array that holds rese
 The underlying data structure for the map `K -> Nat` is a red-black tree.
 The two data structures are combined into one for memory efficiency. 
 In particular, each key is stored only once, not twice.
+This is particularly important if the keys are long (e.g. Principals).
 
 ## Implementation notes
 
