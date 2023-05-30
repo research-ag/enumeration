@@ -26,7 +26,7 @@ The API documentation can be found [here](https://mops.one/enumeration/docs/lib)
 For updates, help, questions, feedback and other requests related to this package join us on:
 
 * [OpenChat group](https://oc.app/2zyqk-iqaaa-aaaar-anmra-cai)
-* [Twitter](https://twitter.com/mr_research_ag)
+* [Twitter](https://twitter.com/mr,research,ag)
 * [Dfinity forum](https://forum.dfinity.org/)
 
 ### Motivation
@@ -74,18 +74,35 @@ e.get(1); // -> "aaa"
 ### Build & test
 
 You should have `node >= 18.16`, `moc >= 0.9.0` and `dfx` installed.
-And the `DFX_MOC_PATH` variable should be set to the current `moc` location.
+And the `DFX,MOC,PATH` variable should be set to the current `moc` location.
 
 Then run:
 ```
 git clone git@github.com:research-ag/enumeration.git
 mops install
-DFX_MOC_PATH=<path-to-moc> mops test
+DFX,MOC,PATH=<path-to-moc> mops test
 ```
 
 ## Benchmarks
 
 Benchmarking code can be found here: [canister-profiling](https://github.com/research-ag/canister-profiling)
+
+We compare `Enumeration<Blob>` against various other maps of type `Blob -> Nat`. The functionality of these other maps is not exactly the same but sufficiently overlaps with Enumeration that a comparison is possible. It should be noted that the other maps don't the inverse map `Nat -> Blob` like Enumeration does. On the other hand, they offer deletion which Enumeration does not. However, the map `Blob -> Nat` is tree-based in all cases hence we can compare insertion and lookup operations both in terms of instructions and memory used.
+
+For the benchmark we insert 4,096 entries type Blob of size 29 bytes to represent a Principal. The results are as follows:
+
+|method|heap size|gc size|collector instructions|mutator instructions|
+|---|---|---|---|---|
+|enumeration|278,768|171,629,676|4,349,893|3,472,737,984|
+|map v7|327,772|170,031,220|4,832,131|3,456,238,067|
+|map v8|393,324|169,653,956|7,224,268|3,454,631,268|
+|rb_tree|377,172|172,176,312|7,690,532|3,471,603,610|
+
+If we divide the heap size by 4,096 and subtract 40 bytes for the actual data of the stored Blob then we get the per-item memory overhead of the respective data structure. The results are:
+
+|enumeration|map v7|map v8|rb_tree|
+|---|---|---|---|
+|28|40|56|52|
 
 ## Design
 
