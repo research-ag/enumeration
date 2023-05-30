@@ -55,7 +55,9 @@ import Enumeration "mo:enumeration";
 
 ### Build & test
 
-You need `moc` and `wasmtime` installed.
+You need `node >18.16`, `moc >0.9.0` and `dfx` installed.
+And the `DFX_MOC_PATH` variable should be set to the current `moc` location.
+
 Then run:
 ```
 git clone git@github.com:research-ag/enumeration.git
