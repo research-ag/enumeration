@@ -2,9 +2,19 @@
 
 ## Overview
 
-Motoko general purpose libraries
+Enumeration<K> implements an add-only set of elements of type K where the
+elements are numbered in the order in which they are added to the set.
+The elements are called *keys* and a key's number is called *index*.
+Lookups are possible in both ways, from key to index and from 
+index to key.
+Running times are:
 
-See documentation here: https://research-ag.github.io/enumeration/
+* adding a key: O(log n)
+* lookup a key: O(log n)
+* lookup an index: O(1)
+
+The data structure is optimized primarily for memory efficiency
+and secondarily for instruction efficiency.
 
 ### Links
 
