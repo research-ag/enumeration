@@ -8,3 +8,5 @@
 dfx.json
 package-set.dhall
 vessel.dhall
+site/
+modoc-tmp

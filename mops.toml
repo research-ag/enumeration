@@ -1,7 +1,13 @@
 [package]
-name = ""
-version = ""
-description = ""
-repository = "https://github.com/research-ag/..."
-keywords = [ ]
+name = "enumeration"
+version = "0.0.1"
+description = "Add-only set of keys with numbering and two-way lookup"
+repository = "https://github.com/research-ag/enumeration"
+keywords = [ "set", "bijective", "map", "principal", "username", "lookup", "key" ]
 license = "Apache-2.0"
+
+[dev-dependencies]
+test = "1.0.1"
+
+[dependencies]
+base = "0.9.1"
