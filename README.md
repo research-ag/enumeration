@@ -2,16 +2,16 @@
 
 ## Overview
 
-Enumeration<K> implements an add-only set of elements of type K where the
+`Enumeration<K>` implements an add-only set of elements of type K where the
 elements are numbered in the order in which they are added to the set.
 The elements are called *keys* and a key's number is called *index*.
 Lookups are possible in both ways, from key to index and from 
 index to key.
 Running times are:
 
-* adding a key: O(log n)
-* lookup a key: O(log n)
-* lookup an index: O(1)
+* adding a key: `O(log n)`
+* lookup a key: `O(log n)`
+* lookup an index: `O(1)`
 
 The data structure is optimized primarily for memory efficiency
 and secondarily for instruction efficiency.
@@ -36,15 +36,15 @@ Per-user data is then stored in a tree or hashmap where key is the principal and
 
 The motivation of this data structure is to enumerate the users in the order that they were registered.
 This result in a permanent user number for each user.
-Instead of a tree, the user data can then be stored in a linear structure such as Buffer or (Vector)[https://mops.one/vector] which has O(1) access.
+Instead of a tree, the user data can then be stored in a linear structure such as Buffer or [Vector](https://mops.one/vector) which has `O(1)` access.
 
 To this end, the present data structure provides an "enumerated set" of keys where the key type `K` is a type parameter (e.g. `Principal`). 
 The set elements (keys) are consecutively numbered 0,1,2,.. in the order in which they are added.
 Keys cannot be deleted.
 
 The lookup from a key to its number is tree based. 
-However, the advantage of taking this approach is that it can be the only O(log n) lookup required in a canister.
-All subsequent accesses to data structures, by being based on the key's number instead of the key, can be O(1).
+However, the advantage of taking this approach is that it can be the only `O(log n)` lookup required in a canister.
+All subsequent accesses to data structures, by being based on the key's number instead of the key, can be `O(1)`.
 
 ## Usage
 
