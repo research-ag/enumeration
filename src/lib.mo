@@ -1,4 +1,18 @@
-/// ...
+/// Enumeration<K> is a "set enumeration" of elements of type K called "keys".
+///
+/// A typical application is to assign permanent user numbers to princpals.
+///
+/// The data structure is a map Nat -> K with the following properties:
+/// * keys are not repeated, i.e. the map is injective
+/// * keys are consecutively numbered (no gaps), i.e. if n keys are stored\
+///   then [0,n) -> K is bijective
+/// * keys are numbered in the order they are added to the data structure
+/// * keys cannot be deleted
+/// * efficient inverse lookup K -> Nat
+/// * doubles as a set implementation (without deletion)
+///
+/// The data structure is optimized primarily for memory efficiency
+/// and secondarily for instruction efficiency.
 ///
 /// Copyright: 2023 MR Research AG
 /// Main author: Andrii Stepanov (AStepanov25)
@@ -14,9 +28,12 @@ module {
   public type Tree = ?({ #R; #B }, Tree, Nat, Tree);
 
   /// Bidirectional enumeration of any `K`s in order they are added.
-  /// For map from `K` to index `Nat` it's implemented as red-black tree, for map from index `Nat` to `K` the implementation is an array.
-  /// ```
-  /// let e = Enumeration.Enumeration();
+  /// For map from `K` to index `Nat` it's implemented as red-black tree,\
+  /// for map from index `Nat` to `K` the implementation is an array.
+  ///
+  /// Example:
+  /// ```motoko
+  /// let e = Enumeration.Enumeration<Blob>(Blob.compare, "");
   /// ```
   public class Enumeration<K>(compare : (K, K) -> {#equal; #greater; #less}, empty : K) {
     private var array : [var K] = [var empty];
@@ -25,8 +42,10 @@ module {
     private var tree = (null : Tree);
 
     /// Add `key` to enumeration. Returns `size` if the key in new to the enumeration and index of key in enumeration otherwise.
-    /// ```
-    /// let e = Enumeration.Enumeration();
+    /// 
+    /// Example:
+    /// ```motoko
+    /// let e = Enumeration.Enumeration<Blob>(Blob.compare, "");
     /// assert(e.add("abc") == 0);
     /// assert(e.add("aaa") == 1);
     /// assert(e.add("abc") == 0);
@@ -108,8 +127,10 @@ module {
     };
 
     /// Returns `?index` where `index` is the index of `key` in order it was added to enumeration, or `null` it `key` wasn't added.
-    /// ```
-    /// let e = Enumeration.Enumeration();
+    /// 
+    /// Example:
+    /// ```motoko
+    /// let e = Enumeration.Enumeration<Blob>(Blob.compare, "");
     /// assert(e.add("abc") == 0);
     /// assert(e.add("aaa") == 1);
     /// assert(e.lookup("abc") == ?0);
@@ -135,8 +156,10 @@ module {
     };
 
     /// Returns `K` with index `index`. Traps it index is out of bounds.
-    /// ```
-    /// let e = Enumeration.Enumeration();
+    /// 
+    /// Example:
+    /// ```motoko
+    /// let e = Enumeration.Enumeration<Blob>(Blob.compare, "");
     /// assert(e.add("abc") == 0);
     /// assert(e.add("aaa") == 1);
     /// assert(e.get(0) == "abc");
@@ -149,9 +172,11 @@ module {
       };
     };
 
-    /// Returns number of unique keys added to enumration.
-    /// ```
-    /// let e = Enumeration.Enumeration();
+    /// Returns number of unique keys added to enumeration.
+    /// 
+    /// Example:
+    /// ```motoko
+    /// let e = Enumeration.Enumeration<Blob>(Blob.compare, "");
     /// assert(e.add("abc") == 0);
     /// assert(e.add("aaa") == 1);
     /// assert(e.size() == 2);
@@ -159,10 +184,12 @@ module {
     /// Runtime: O(1)
     public func size() : Nat = size_;
 
-    /// Returns pair of red-black tree for map from `K` to `Nat` and array of `K` for map from `Nat` to `K`.
-    /// Returns number of unique keys added to enumration.
-    /// ```
-    /// let e = Enumeration.Enumeration();
+    /// Returns pair of red-black tree for map from `K` to `Nat` and\
+    /// array of `K` for map from `Nat` to `K`.
+    /// 
+    /// Example:
+    /// ```motoko
+    /// let e = Enumeration.Enumeration<Blob>(Blob.compare, "");
     /// assert(e.add("abc") == 0);
     /// assert(e.add("aaa") == 1);
     /// e.unsafeUnshare(e.share()); // Nothing changed
@@ -170,10 +197,14 @@ module {
     /// Runtime: O(1)
     public func share() : (Tree, [var K], Nat) = (tree, array, size_);
 
-    /// Sets internal content from red-black tree for map from `K` to `Nat` and array of `K` for map from `Nat` to `K`.
-    /// `t` should be a valid red-black tree and correspond to array `a`. This function doesn't do validation.
-    /// ```
-    /// let e = Enumeration.Enumeration();
+    /// Sets internal content from red-black tree for map from `K` to `Nat`\
+    /// and array of `K` for map from `Nat` to `K`.\
+    /// `t` should be a valid red-black tree and correspond to array `a`.\
+    /// This function does not perform any validation.
+    /// 
+    /// Example:
+    /// ```motoko
+    /// let e = Enumeration.Enumeration<Blob>(Blob.compare, "");
     /// assert(e.add("abc") == 0);
     /// assert(e.add("aaa") == 1);
     /// e.unsafeUnshare(e.share()); // Nothing changed
