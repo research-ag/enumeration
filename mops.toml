@@ -3,7 +3,7 @@ name = "enumeration"
 version = "0.0.1"
 description = "Array of keys with inverse lookup"
 repository = "https://github.com/research-ag/enumeration"
-keywords = [ "bi-directional", "map", "principal", "username" ]
+keywords = [ "set", "bijective", "map", "principal", "username", "lookup", "key" ]
 license = "Apache-2.0"
 
 [dev-dependencies]
