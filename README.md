@@ -9,12 +9,14 @@ Lookups are possible in both ways, from key to index and from
 index to key.
 Running times are:
 
-* adding a key: `O(log n)`
+* adding a key: `O(log n)` average, `O(n)` worst-case
 * lookup a key: `O(log n)`
 * lookup an index: `O(1)`
 
 The data structure is optimized primarily for memory efficiency
 and secondarily for instruction efficiency.
+Furthermore, instruction efficiency is optimized for lookup speed over addition speed.
+The `O(n)` worst-case for adding a key is a tradeoff accepted for a constant gain in lookup speed.
 
 ### Links
 
