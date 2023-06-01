@@ -7,7 +7,8 @@ elements are numbered in the order in which they are added to the set.
 The elements are called *keys* and a key's number is called *index*.
 Lookups are possible in both ways, from key to index and from 
 index to key.
-Running times are:
+Memory space is `O(n)`.
+Time complexities are:
 
 * adding a key: `O(log n)` average, `O(n)` worst-case
 * lookup a key: `O(log n)`
