@@ -94,15 +94,15 @@ We compare `Enumeration<Blob>` against various other maps of type `Blob -> Nat`.
 
 For the benchmark we insert 4,096 entries type Blob of size 29 bytes to represent a Principal. The results are as follows:
 
-|enumeration|map v7|map v8|rb_tree|
-|---|---|---|---|
-|278,768|327,772|393,324|377,172|
+|btree|enumeration|map v7|map v8|rb_tree|
+|---|---|---|---|---|
+|267,556|278,768|327,772|393,324|377,172|
 
 If we divide the heap size by 4,096 and subtract 40 bytes for the actual data of the stored Blob then we get the per-item memory overhead of the respective data structure. The results are:
 
-|enumeration|map v7|map v8|rb_tree|
+|btree|enumeration|map v7|map v8|rb_tree|
 |---|---|---|---|
-|28|40|56|52|
+|25.3|28|40|56|52|
 
 ## Design
 
