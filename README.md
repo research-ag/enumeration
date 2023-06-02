@@ -102,10 +102,10 @@ There should not be a dependence on the type.
 However, in some cases there are, so we list the results per type:
 
 |type|btree|enumeration|rb_tree|map v7|map v8|
-|---|---|---|---|---|
+|---|---|---|---|---|---|
+|Blob|20.9|24|48|24|36|
 |Nat32|21|24|48|28|52|
 |Nat64,Nat|21|24|48|36|52|
-|Blob|20.9|24|48|24|36|
 
 Note: We don't know how to explain the dependence on type for map v7 and v8.
 It appears that map v7 handles Nat64/Nat less efficiently than Nat32 by 8 bytes.
