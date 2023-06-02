@@ -97,19 +97,14 @@ We compare that against an array of length N with the same entries and take the 
 This tells us the memory overhead that the data structure has over an array and eliminates the effect of boxing, which depend on type and value.
 We finally divide by N to get the memory overhead per entry.
 
-The results are as follows. 
-There should not be a dependence on the type. 
-However, in some cases there are, so we list the results per type:
+The results are as follows: 
 
-|type|btree|enumeration|rb_tree|map v7|map v8|
-|---|---|---|---|---|---|
-|Blob|20.9|24|48|24|36|
-|Nat32|21|24|48|28|52|
-|Nat64,Nat|21|24|48|36|52|
+|btree|enumeration|rb_tree|map v7|map v8|
+|---|---|---|---|---|
+|20.9|24|48|24*|36*|
 
-Note: We don't know how to explain the dependence on type for map v7 and v8.
-It appears that map v7 handles Nat64/Nat less efficiently than Nat32 by 8 bytes.
-Conversely, map v7 and v8 handle Blob more efficiently than Nat32 by 4 and 16 bytes, respectively.
+()* Note: For reasons internal to the hashmap data structures (map v7 and v8) there is, unexpected to us, a dependency on the type. The above was measured with `Blob`. With `Nat32` the values increase to 28, 52 for v7, v8, respectively. 
+And with `Nat64/Nat` they increase to 36, 52.
 
 ## Design
 
