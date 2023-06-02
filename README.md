@@ -92,17 +92,24 @@ Benchmarking code can be found here: [canister-profiling](https://github.com/res
 
 We compare `Enumeration<Blob>` against various other maps of type `Blob -> Nat`. The functionality of these other maps is not exactly the same but sufficiently overlaps with Enumeration that a comparison is possible. It should be noted that the other maps don't the inverse map `Nat -> Blob` like Enumeration does. On the other hand, they offer deletion which Enumeration does not. However, the map `Blob -> Nat` is tree-based in all cases hence we can compare insertion and lookup operations both in terms of instructions and memory used.
 
-For the benchmark we insert 4,096 entries type Blob of size 29 bytes to represent a Principal. The results are as follows:
+For the memory benchmark we insert N random entries of a given type T into Enumeration.
+We compare that against an array of length N with the same entries and take the difference.
+This tells us the memory overhead that the data structure has over an array and eliminates the effect of boxing, which depend on type and value.
+We finally divide by N to get the memory overhead per entry.
 
-|btree|enumeration|map v7|map v8|rb_tree|
+The results are as follows. 
+There should not be a dependence on the type. 
+However, in some cases there are, so we list the results per type:
+
+|type|btree|enumeration|rb_tree|map v7|map v8|
 |---|---|---|---|---|
-|267,556|278,768|327,772|393,324|377,172|
+|Nat32|21|24|48|28|52|
+|Nat64,Nat|21|24|48|36|52|
+|Blob|20.9|24|48|24|36|
 
-If we divide the heap size by 4,096 and subtract 40 bytes for the actual data of the stored Blob then we get the per-item memory overhead of the respective data structure. The results are:
-
-|btree|enumeration|map v7|map v8|rb_tree|
-|---|---|---|---|
-|25.3|28|40|56|52|
+Note: We don't know how to explain the dependence on type for map v7 and v8.
+It appears that map v7 handles Nat64/Nat less efficiently than Nat32 by 8 bytes.
+Conversely, map v7 and v8 handle Blob more efficiently than Nat32 by 4 and 16 bytes, respectively.
 
 ## Design
 
