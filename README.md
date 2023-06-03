@@ -117,16 +117,18 @@ Then lookup up several of the ones that are actually in the map ("hits") and tak
 
 The results are as follows (N = 4,096), unit is instructions per lookup: 
 
+|random blobs inside average|3241|2889|5107|2226|2111|
+|random blobs average|2704|2310|5107|2226|2111|
+
 ||btree|enumeration|rb_tree|map v7|map v8|
 |---|---|---|---|---|---|
-|hits|6021|3241|3791*|2226|2111|
-|misses|6021|2704|2358|2226|2111|
+|hits|5107|3241|2889|2226|2111|
+|misses|5107|2704|2310|2226|2111|
 
 Notes:
 
 * The hashmaps (v7, v8) are faster than the data structures that do not use hashes (all others).
-* Hits are more expensive in the rb trees because the final comparison, if it is a match, is longer as it compares the full 32 bytes.
-* RBTree could not yet be measured with the latest compiler version which will improve the hits. It is expected to be slightly faster than enumeration, just like the misses are.
+* Hits are more expensive in the rb-tree based data structures because the final comparison, if it is a match, is longer as has to compare the full 32 bytes.
 
 ## Design
 
