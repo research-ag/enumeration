@@ -1,14 +1,14 @@
-/// Enumeration<K> is a "set enumeration" of elements of type K called "keys".
+/// `Enumeration<K>` is a "set enumeration" of elements of type `K` called "keys".
 ///
 /// A typical application is to assign permanent user numbers to princpals.
 ///
-/// The data structure is a map Nat -> K with the following properties:
+/// The data structure is a map `Nat -> K` with the following properties:
 /// * keys are not repeated, i.e. the map is injective
-/// * keys are consecutively numbered (no gaps), i.e. if n keys are stored\
-///   then [0,n) -> K is bijective
+/// * keys are consecutively numbered (no gaps), i.e. if n keys are stored
+///   then `[0,n) -> K` is bijective
 /// * keys are numbered in the order they are added to the data structure
 /// * keys cannot be deleted
-/// * efficient inverse lookup K -> Nat
+/// * efficient inverse lookup `K -> Nat`
 /// * doubles as a set implementation (without deletion)
 ///
 /// The data structure is optimized primarily for memory efficiency
@@ -27,9 +27,9 @@ module {
   /// Red-black tree of key `Nat`.
   public type Tree = ?({ #R; #B }, Tree, Nat, Tree);
 
-  /// Bidirectional enumeration of any `K`s in order they are added.
-  /// For map from `K` to index `Nat` it's implemented as red-black tree,\
-  /// for map from index `Nat` to `K` the implementation is an array.
+  /// Bidirectional enumeration of any `K` s in the order they are added.
+  /// For a map from `K` to index `Nat` it is implemented as red-black tree,
+  /// for a map from index `Nat` to `K` the implementation is an array.
   ///
   /// Example:
   /// ```motoko
@@ -184,7 +184,7 @@ module {
     /// Runtime: O(1)
     public func size() : Nat = size_;
 
-    /// Returns pair of red-black tree for map from `K` to `Nat` and\
+    /// Returns pair of red-black tree for map from `K` to `Nat` and
     /// array of `K` for map from `Nat` to `K`.
     /// 
     /// Example:
@@ -197,9 +197,9 @@ module {
     /// Runtime: O(1)
     public func share() : (Tree, [var K], Nat) = (tree, array, size_);
 
-    /// Sets internal content from red-black tree for map from `K` to `Nat`\
-    /// and array of `K` for map from `Nat` to `K`.\
-    /// `t` should be a valid red-black tree and correspond to array `a`.\
+    /// Sets internal content from red-black tree for map from `K` to `Nat`
+    /// and array of `K` for map from `Nat` to `K`.
+    /// `t` should be a valid red-black tree and correspond to array `a`.
     /// This function does not perform any validation.
     /// 
     /// Example:
