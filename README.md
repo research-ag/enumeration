@@ -90,21 +90,43 @@ DFX_MOC_PATH=<path-to-moc> mops test
 
 Benchmarking code can be found here: [canister-profiling](https://github.com/research-ag/canister-profiling)
 
-We compare `Enumeration<Blob>` against various other maps of type `Blob -> Nat`. The functionality of these other maps is not exactly the same but sufficiently overlaps with Enumeration that a comparison is possible. It should be noted that the other maps don't the inverse map `Nat -> Blob` like Enumeration does. On the other hand, they offer deletion which Enumeration does not. However, the map `Blob -> Nat` is tree-based in all cases hence we can compare insertion and lookup operations both in terms of instructions and memory used.
+We compare `Enumeration<Blob>` against various other maps of type `Blob -> Nat`. The functionality of these other maps is not exactly the same but sufficiently overlaps with Enumeration that a comparison is possible. It should be noted that the other maps do not have the inverse map `Nat -> Blob` like Enumeration does. On the other hand, they offer deletion which Enumeration does not. However, the map `Blob -> Nat` is tree-based in all cases hence we can compare insertion and lookup operations both in terms of instructions and memory used.
+
+### Memory
 
 For the memory benchmark we insert N random entries of a given type T into Enumeration.
 We compare that against an array of length N with the same entries and take the difference.
 This tells us the memory overhead that the data structure has over an array and eliminates the effect of boxing, which depend on type and value.
 We finally divide by N to get the memory overhead per entry.
 
-The results are as follows: 
+The results are as follows (N = 4,096), unit is bytes per entry: 
 
 |btree|enumeration|rb_tree|map v7|map v8|
 |---|---|---|---|---|
-|20.9|24|48|24*|36*|
+|20.9|24|48|36*|52|
 
-()* Note: For reasons internal to the hashmap data structures (map v7 and v8) there is, unexpected to us, a dependency on the type. The above was measured with `Blob`. With `Nat32` the values increase to 28, 52 for v7, v8, respectively. 
-And with `Nat64/Nat` they increase to 36, 52.
+_* Note: map v7 has shown an unexpected type dependency which we have not investigated further.
+The given result is for type `Blob`.
+The data structure may be more efficient for type `Nat32`.
+
+### Time
+
+For the time benchmark we use 32 byte `Blob`s as keys.
+We insert N random blobs into the map.
+Then lookup up several of the ones that are actually in the map ("hits") and take the average.
+
+The results are as follows (N = 4,096), unit is instructions per lookup: 
+
+||btree|enumeration|rb_tree|map v7|map v8|
+|---|---|---|---|---|---|
+|hits|6021|3241|3791*|2226|2111|
+|misses|6021|2704|2358|2226|2111|
+
+Notes:
+
+* The hashmaps (v7, v8) are faster than the data structures that do not use hashes (all others).
+* Hits are more expensive in the rb trees because the final comparison, if it is a match, is longer as it compares the full 32 bytes.
+* RBTree could not yet be measured with the latest compiler version which will improve the hits. It is expected to be slightly faster than enumeration, just like the misses are.
 
 ## Design
 
