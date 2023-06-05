@@ -29,10 +29,6 @@ jobs:
         run: |          
           npm i -g ic-mops@${{ env.mops_version }}
 
-      - name: Get dfx
-        run: |
-          DFX_VERSION=${{ env.dfx_version }} sh -ci "$(curl -fsSL https://internetcomputer.org/install.sh)"
-
       - name: install mops packages
         run: mops install
 
