@@ -1,6 +1,6 @@
 [package]
 name = "enumeration"
-version = "0.0.1"
+version = "0.0.3"
 description = "Add-only set of keys with numbering and two-way lookup"
 repository = "https://github.com/research-ag/enumeration"
 keywords = [ "set", "bijective", "map", "lookup", "key" ]
@@ -10,4 +10,4 @@ license = "Apache-2.0"
 test = "1.0.1"
 
 [dependencies]
-base = "0.9.1"
+base = "0.9.2"
