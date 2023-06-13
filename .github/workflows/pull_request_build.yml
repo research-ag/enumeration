@@ -5,7 +5,7 @@ on:
 
 env:
   mops_version: 0.13.0
-  moc_version: 0.9.1
+  moc_version: 0.9.2
   dfx_version: 0.14.1
 
 jobs:
