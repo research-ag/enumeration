@@ -27,6 +27,34 @@ module {
   /// Red-black tree of key `Nat`.
   public type Tree = ?({ #R; #B }, Tree, Nat, Tree);
 
+  /// Common functions between both classes
+  func lbalance(left : Tree, y : Nat, right : Tree) : Tree {
+    switch (left, right) {
+      case (?(#R, ?(#R, l1, y1, r1), y2, r2), r) ?(#R, ?(#B, l1, y1, r1), y2, ?(#B, r2, y, r));
+      case (?(#R, l1, y1, ?(#R, l2, y2, r2)), r) ?(#R, ?(#B, l1, y1, l2), y2, ?(#B, r2, y, r));
+      case _ ?(#B, left, y, right);
+    };
+  };
+
+  func rbalance(left : Tree, y : Nat, right : Tree) : Tree {
+    switch (left, right) {
+      case (l, ?(#R, l1, y1, ?(#R, l2, y2, r2))) ?(#R, ?(#B, l, y, l1), y1, ?(#B, l2, y2, r2));
+      case (l, ?(#R, ?(#R, l1, y1, r1), y2, r2)) ?(#R, ?(#B, l, y, l1), y1, ?(#B, r1, y2, r2));
+      case _ ?(#B, left, y, right);
+    };
+  };
+
+  // approximate growth by sqrt(2) by 2-powers
+  // the function will trap if n == 0 or n >= 3 * 2 ** 30
+  func next_size(n_ : Nat) : Nat {
+    if (n_ == 1) return 2;
+    let n = Nat32.fromNat(n_); // traps if n >= 2 ** 32
+    let s = 30 - Nat32.bitcountLeadingZero(n); // traps if n == 0
+    let m = ((n >> s) +% 1) << s;
+    assert (m != 0); // traps if n >= 3 * 2 ** 30
+    Nat32.toNat(m);
+  };
+
   /// Bidirectional enumeration of any `K` s in the order they are added.
   /// For a map from `K` to index `Nat` it is implemented as red-black tree,
   /// for a map from index `Nat` to `K` the implementation is an array.
@@ -53,22 +81,6 @@ module {
     /// Runtime: O(log(n))
     public func add(key : K) : Nat {
       var index = size_;
-
-      func lbalance(left : Tree, y : Nat, right : Tree) : Tree {
-        switch (left, right) {
-          case (?(#R, ?(#R, l1, y1, r1), y2, r2), r) ?(#R, ?(#B, l1, y1, r1), y2, ?(#B, r2, y, r));
-          case (?(#R, l1, y1, ?(#R, l2, y2, r2)), r) ?(#R, ?(#B, l1, y1, l2), y2, ?(#B, r2, y, r));
-          case _ ?(#B, left, y, right);
-        };
-      };
-
-      func rbalance(left : Tree, y : Nat, right : Tree) : Tree {
-        switch (left, right) {
-          case (l, ?(#R, l1, y1, ?(#R, l2, y2, r2))) ?(#R, ?(#B, l, y, l1), y1, ?(#B, l2, y2, r2));
-          case (l, ?(#R, ?(#R, l1, y1, r1), y2, r2)) ?(#R, ?(#B, l, y, l1), y1, ?(#B, r1, y2, r2));
-          case _ ?(#B, left, y, right);
-        };
-      };
 
       func insert(tree : Tree) : Tree {
         switch tree {
@@ -104,16 +116,6 @@ module {
         case other other;
       };
 
-      // approximate growth by sqrt(2) by 2-powers
-      // the function will trap if n == 0 or n >= 3 * 2 ** 30
-      func next_size(n_ : Nat) : Nat {
-        if (n_ == 1) return 2;
-        let n = Nat32.fromNat(n_); // traps if n >= 2 ** 32
-        let s = 30 - Nat32.bitcountLeadingZero(n); // traps if n == 0
-        let m = ((n >> s) +% 1) << s;
-        assert (m != 0); // traps if n >= 3 * 2 ** 30
-        Nat32.toNat(m);
-      };
 
       if (index == size_) {
         if (size_ == array.size()) {
@@ -217,6 +219,7 @@ module {
     };
   };
 
+  /// An optimized version of Enumeration<Blob>
   public class EnumerationBlob() {
     private var array : [var Blob] = [var ""];
     private var size_ = 0;
@@ -227,7 +230,7 @@ module {
     ///
     /// Example:
     /// ```motoko
-    /// let e = Enumeration.Enumeration<Blob>(Blob.compare, "");
+    /// let e = Enumeration.EnumerationBlob();
     /// assert(e.add("abc") == 0);
     /// assert(e.add("aaa") == 1);
     /// assert(e.add("abc") == 0);
@@ -235,22 +238,6 @@ module {
     /// Runtime: O(log(n))
     public func add(key : Blob) : Nat {
       var index = size_;
-
-      func lbalance(left : Tree, y : Nat, right : Tree) : Tree {
-        switch (left, right) {
-          case (?(#R, ?(#R, l1, y1, r1), y2, r2), r) ?(#R, ?(#B, l1, y1, r1), y2, ?(#B, r2, y, r));
-          case (?(#R, l1, y1, ?(#R, l2, y2, r2)), r) ?(#R, ?(#B, l1, y1, l2), y2, ?(#B, r2, y, r));
-          case _ ?(#B, left, y, right);
-        };
-      };
-
-      func rbalance(left : Tree, y : Nat, right : Tree) : Tree {
-        switch (left, right) {
-          case (l, ?(#R, l1, y1, ?(#R, l2, y2, r2))) ?(#R, ?(#B, l, y, l1), y1, ?(#B, l2, y2, r2));
-          case (l, ?(#R, ?(#R, l1, y1, r1), y2, r2)) ?(#R, ?(#B, l, y, l1), y1, ?(#B, r1, y2, r2));
-          case _ ?(#B, left, y, right);
-        };
-      };
 
       func insert(tree : Tree) : Tree {
         switch tree {
@@ -288,17 +275,6 @@ module {
         case other other;
       };
 
-      // approximate growth by sqrt(2) by 2-powers
-      // the function will trap if n == 0 or n >= 3 * 2 ** 30
-      func next_size(n_ : Nat) : Nat {
-        if (n_ == 1) return 2;
-        let n = Nat32.fromNat(n_); // traps if n >= 2 ** 32
-        let s = 30 - Nat32.bitcountLeadingZero(n); // traps if n == 0
-        let m = ((n >> s) +% 1) << s;
-        assert (m != 0); // traps if n >= 3 * 2 ** 30
-        Nat32.toNat(m);
-      };
-
       if (index == size_) {
         if (size_ == array.size()) {
           array := Array.tabulateVar<Blob>(next_size(size_), func(i) = if (i < size_) { array[i] } else { "" });
@@ -314,7 +290,7 @@ module {
     ///
     /// Example:
     /// ```motoko
-    /// let e = Enumeration.Enumeration<Blob>(Blob.compare, "");
+    /// let e = Enumeration.EnumerationBlob();
     /// assert(e.add("abc") == 0);
     /// assert(e.add("aaa") == 1);
     /// assert(e.lookup("abc") == ?0);
@@ -347,7 +323,7 @@ module {
     ///
     /// Example:
     /// ```motoko
-    /// let e = Enumeration.Enumeration<Blob>(Blob.compare, "");
+    /// let e = Enumeration.EnumerationBlob();
     /// assert(e.add("abc") == 0);
     /// assert(e.add("aaa") == 1);
     /// assert(e.get(0) == "abc");
@@ -364,7 +340,7 @@ module {
     ///
     /// Example:
     /// ```motoko
-    /// let e = Enumeration.Enumeration<Blob>(Blob.compare, "");
+    /// let e = Enumeration.EnumerationBlob();
     /// assert(e.add("abc") == 0);
     /// assert(e.add("aaa") == 1);
     /// assert(e.size() == 2);
@@ -377,7 +353,7 @@ module {
     ///
     /// Example:
     /// ```motoko
-    /// let e = Enumeration.Enumeration<Blob>(Blob.compare, "");
+    /// let e = Enumeration.EnumerationBlob();
     /// assert(e.add("abc") == 0);
     /// assert(e.add("aaa") == 1);
     /// e.unsafeUnshare(e.share()); // Nothing changed
@@ -392,7 +368,7 @@ module {
     ///
     /// Example:
     /// ```motoko
-    /// let e = Enumeration.Enumeration<Blob>(Blob.compare, "");
+    /// let e = Enumeration.EnumerationBlob();
     /// assert(e.add("abc") == 0);
     /// assert(e.add("aaa") == 1);
     /// e.unsafeUnshare(e.share()); // Nothing changed
