@@ -41,7 +41,7 @@ class RNG() {
 
 let n = 100;
 let r = RNG();
-let b = Enumeration.Enumeration<Blob>(Blob.compare, "");
+let b = Enumeration.EnumerationBlob();
 let p = Enumeration.Enumeration(Principal.compare, Principal.fromBlob "");
 let t = Enumeration.Enumeration(Text.compare, "");
 let blobs = Array.tabulate<Blob>(n, func(i) = r.blob());

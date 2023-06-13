@@ -91,6 +91,8 @@ Benchmarking code can be found here: [canister-profiling](https://github.com/res
 
 We compare `Enumeration<K>` against various other maps of type `K -> Nat`. The functionality of these other maps is not exactly the same but sufficiently overlaps with Enumeration that a comparison is possible. It should be noted that the other maps do not have the inverse map `Nat -> K` like Enumeration does. On the other hand, they offer deletion which Enumeration does not. However, the map `K -> Nat` is tree-based in all cases hence we can compare insertion and lookup operations both in terms of instructions and memory used.
 
+The results below have been obtained with `moc 0.9.2`.
+
 ### Memory
 
 For the memory benchmark we insert N random entries of a given type `K` into Enumeration.
@@ -117,19 +119,22 @@ The data structure may be more efficient for type `Nat32`.
 
 For the time benchmark we use 32 byte `Blob`s as keys.
 We insert N random blobs into the map.
-Then we look up several of the keys that are actually in the map ("hits") and take the average.
+Then we look up several of the keys and take the average.
+In one run the keys are actually in the map already ("hits"),
+in the other run the keys are not in the map ("misses").  
 
 The results are as follows (N = 4,096), unit is instructions per lookup: 
 
 ||btree|enumeration|rb_tree|map v7|map v8|
 |---|---|---|---|---|---|
-|hits|5107|3241|2889|2226|2111|
-|misses|5107|2704|2310|2226|2111|
+|hits|4972|2519|2483|2060|1934|
+|misses|4972|2026|1983|2060|1934|
 
 Notes:
 
-* The hashmaps (v7, v8) are faster than the data structures that do not use hashes (all others).
 * Hits are more expensive in the rb-tree based data structures because the final comparison, if it is a match, has to compare the full 32 bytes.
+* For misses, the rb-tree based data structures are as fast as the hashmaps (v7, v8).
+* For enumeration the optimized class `EnumerationBlob` was used in the benchmark, not the generic class `Enumeration<Blob>`.
 
 ## Design
 
