@@ -119,7 +119,9 @@ The data structure may be more efficient for type `Nat32`.
 
 For the time benchmark we use 32 byte `Blob`s as keys.
 We insert N random blobs into the map.
-Then we look up several of the keys that are actually in the map ("hits") and take the average.
+Then we look up several of the keys and take the average.
+In one run the keys are actually in the map already ("hits"),
+in the other run the keys are not in the map ("misses").  
 
 The results are as follows (N = 4,096), unit is instructions per lookup: 
 
@@ -132,6 +134,7 @@ Notes:
 
 * Hits are more expensive in the rb-tree based data structures because the final comparison, if it is a match, has to compare the full 32 bytes.
 * For misses, the rb-tree based data structures are as fast as the hashmaps (v7, v8).
+* For enumeration the optimized class `EnumerationBlob` was used in the benchmark, not the generic class `Enumeration<Blob>`.
 
 ## Design
 
