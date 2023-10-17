@@ -22,8 +22,18 @@ import Blob "mo:base/Blob";
 import Array "mo:base/Array";
 import Nat32 "mo:base/Nat32";
 import Prim "mo:⛔";
+import Region "mo:base/Region";
+import Nat64 "mo:base/Nat64";
 
 module {
+  public type BufferRep = {
+    bytes : Region;
+    var bytes_count : Nat64;
+
+    elems : Region;
+    var elems_count : Nat64;
+  };
+
   /// Red-black tree of key `Nat`.
   public type Tree = ?({ #R; #B }, Tree, Nat, Tree);
 
@@ -115,7 +125,6 @@ module {
         case (?(#R, left, y, right)) ?(#B, left, y, right);
         case other other;
       };
-
 
       if (index == size_) {
         if (size_ == array.size()) {
@@ -221,6 +230,13 @@ module {
 
   /// An optimized version of Enumeration<Blob>
   public class EnumerationBlob() {
+    private var stableRep : BufferRep = {
+      bytes = Region.new();
+      var bytes_count = 0;
+      elems = Region.new();
+      var elems_count = 0;
+    };
+
     private var array : [var Blob] = [var ""];
     private var size_ = 0;
 
@@ -275,7 +291,9 @@ module {
         case other other;
       };
 
-      if (index == size_) {
+      let stableSize = Nat64.toNat(stableRep.elems_count);
+
+      if (index == size_ + stableSize) {
         if (size_ == array.size()) {
           array := Array.tabulateVar<Blob>(next_size(size_), func(i) = if (i < size_) { array[i] } else { "" });
         };
@@ -359,7 +377,38 @@ module {
     /// e.unsafeUnshare(e.share()); // Nothing changed
     /// ```
     /// Runtime: O(1)
-    public func share() : (Tree, [var Blob], Nat) = (tree, array, size_);
+    public func share() : (Tree, BufferRep, Nat) {
+      let elem_size = 16 : Nat64; /* two Nat64s, for pos and size. */
+
+      func regionEnsureSizeBytes(r : Region, new_byte_count : Nat64) {
+        let pages = Region.size(r);
+        if (new_byte_count > pages << 16) {
+          let new_pages = ((new_byte_count + ((1 << 16) - 1)) / (1 << 16)) - pages;
+          assert Region.grow(r, new_pages) == pages;
+        };
+      };
+
+      func bufferAdd(blob : Blob) {
+        let elem_i = stableRep.elems_count;
+        stableRep.elems_count += 1;
+
+        let elem_pos = stableRep.bytes_count;
+        stableRep.bytes_count += Prim.natToNat64(blob.size());
+
+        regionEnsureSizeBytes(stableRep.bytes, stableRep.bytes_count);
+        Region.storeBlob(stableRep.bytes, elem_pos, blob);
+
+        regionEnsureSizeBytes(stableRep.elems, stableRep.elems_count * elem_size);
+        Region.storeNat64(stableRep.elems, elem_i * elem_size + 0, elem_pos);
+        Region.storeNat64(stableRep.elems, elem_i * elem_size + 8, Prim.natToNat64(blob.size()));
+      };
+      
+      var i = 0;
+      while (i < size_) {
+        bufferAdd(array[i]);
+      };
+      (tree, stableRep, size_);
+    };
 
     /// Sets internal content from red-black tree for map from `K` to `Nat`
     /// and array of `K` for map from `Nat` to `K`.

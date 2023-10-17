@@ -10,4 +10,4 @@ license = "Apache-2.0"
 test = "1.0.1"
 
 [dependencies]
-base = "https://github.com/dfinity/motoko-base#6bea744"
+base = "0.10.0"
