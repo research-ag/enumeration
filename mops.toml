@@ -12,3 +12,6 @@ test = "2.0.0"
 [dependencies]
 base = "0.11.1"
 
+[toolchain]
+moc = "0.11.1"
+
