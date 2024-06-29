@@ -1,13 +1,14 @@
 [package]
 name = "enumeration"
-version = "0.1.0"
+version = "0.1.1"
 description = "Add-only set of keys with numbering and two-way lookup"
 repository = "https://github.com/research-ag/enumeration"
 keywords = [ "set", "bijective", "map", "lookup", "key" ]
 license = "Apache-2.0"
 
 [dev-dependencies]
-test = "1.0.1"
+test = "2.0.0"
 
 [dependencies]
-base = "https://github.com/dfinity/motoko-base#6bea744"
+base = "0.11.1"
+
