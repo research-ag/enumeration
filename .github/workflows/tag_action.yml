@@ -1,0 +1,36 @@
+name: Report tag to Notion
+
+on:
+  push:
+    tags:
+      - rc*
+env:
+  NOTION_DATABASE_ID: bb63c6a1c18e440c8795b70b0364e8a7
+  WEBHOOK_URL: https://hook.eu2.make.com/sg1xhhlvnp4314llgde92csqgjrpm42e
+
+jobs:
+  report_tag_to_notion:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4.1.7
+
+      - name: Extract tag name and commit URL
+        id: extract_info
+        run: |
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          COMMIT_URL=${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/commit/${GITHUB_SHA}
+          echo "TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
+          echo "COMMIT_URL=$COMMIT_URL" >> $GITHUB_ENV
+
+      - name: Send POST request
+        run: |
+          curl -X POST "$WEBHOOK_URL" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "notion_database_id": "'"${{ env.NOTION_DATABASE_ID }}"'",
+              "github_tag_name": "'"${{ env.TAG_NAME }}"'",
+              "github_commit_url": "'"${{ env.COMMIT_URL }}"'"
+            }'
+
