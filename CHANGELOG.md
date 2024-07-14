@@ -2,7 +2,7 @@
 
 ## 0.1.1
 
-* Bump dependencies, moc 0.11.1
+* Bump dependencies, use moc/base 0.11.2
 
 ## 0.1.0
 
@@ -11,4 +11,3 @@
 ## 0.0.2
 
 ## 0.0.1
-

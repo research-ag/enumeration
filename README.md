@@ -76,13 +76,11 @@ e.get(1); // -> "aaa"
 ```
 ### Build & test
 
-You should have the latest `moc` installed and know the executable's path.
-
-Then run:
+Run:
 ```
 git clone git@github.com:research-ag/enumeration.git
 mops install
-DFX_MOC_PATH=<path-to-moc> mops test
+mops test
 ```
 
 ## Benchmarks
