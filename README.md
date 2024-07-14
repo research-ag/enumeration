@@ -76,13 +76,11 @@ e.get(1); // -> "aaa"
 ```
 ### Build & test
 
-You should have the latest `moc` installed and know the executable's path.
-
-Then run:
+Run:
 ```
 git clone git@github.com:research-ag/enumeration.git
 mops install
-DFX_MOC_PATH=<path-to-moc> mops test
+mops test
 ```
 
 ## Benchmarks
@@ -156,7 +154,7 @@ Shrinking of the array and key deletion in the red-black tree are not implemente
 
 ## Copyright
 
-MR Research AG, 2023
+MR Research AG, 2023-2024
 ## Authors
 
 Main author: Andrii Stepanov (AStepanov25)\
@@ -164,3 +162,4 @@ Contributors: Timo Hanke (timohanke), Yurii Pytomets (Pitometsu)
 ## License 
 
 Apache-2.0
+
