@@ -1,3 +1,6 @@
+[![mops](https://oknww-riaaa-aaaam-qaf6a-cai.raw.ic0.app/badge/mops/enumeration)](https://mops.one/enumeration)
+[![documentation](https://oknww-riaaa-aaaam-qaf6a-cai.raw.ic0.app/badge/documentation/enumeration)](https://mops.one/enumeration/docs)
+
 # Enumeration for Motoko
 
 ## Overview
