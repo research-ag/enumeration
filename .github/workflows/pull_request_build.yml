@@ -12,10 +12,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4.1.7
+        uses: actions/checkout@v6
 
       - name: Install mops
-        uses: ZenVoich/setup-mops@v1.3.1
+        uses: caffeinelabs/setup-mops@v1
 
       - name: Make sure moc is installed
         run: mops toolchain bin moc || mops toolchain use moc latest

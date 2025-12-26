@@ -1,5 +1,9 @@
 # Enumeration changelog
 
+## 0.1.2
+
+* Switch from base to core 2.0.0
+
 ## 0.1.1
 
 * Bump dependencies, use moc/base 0.11.2

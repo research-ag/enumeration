@@ -14,13 +14,13 @@
 /// The data structure is optimized primarily for memory efficiency
 /// and secondarily for instruction efficiency.
 ///
-/// Copyright: 2023 MR Research AG
+/// Copyright: 2023 - 2025 MR Research AG
 /// Main author: Andrii Stepanov (AStepanov25)
 /// Contributors: Timo Hanke (timohanke), Yurii Pytomets (Pitometsu)
 
-import Blob "mo:base/Blob";
-import Array "mo:base/Array";
-import Nat32 "mo:base/Nat32";
+import Blob "mo:core/Blob";
+import Nat32 "mo:core/Nat32";
+import VarArray "mo:core/VarArray";
 import Prim "mo:⛔";
 
 module {
@@ -116,10 +116,9 @@ module {
         case other other;
       };
 
-
       if (index == size_) {
         if (size_ == array.size()) {
-          array := Array.tabulateVar<K>(next_size(size_), func(i) = if (i < size_) { array[i] } else { empty });
+          array := VarArray.tabulate<K>(next_size(size_), func(i) = if (i < size_) { array[i] } else { empty });
         };
         array[size_] := key;
         size_ += 1;
@@ -277,7 +276,7 @@ module {
 
       if (index == size_) {
         if (size_ == array.size()) {
-          array := Array.tabulateVar<Blob>(next_size(size_), func(i) = if (i < size_) { array[i] } else { "" });
+          array := VarArray.tabulate<Blob>(next_size(size_), func(i) = if (i < size_) { array[i] } else { "" });
         };
         array[size_] := key;
         size_ += 1;

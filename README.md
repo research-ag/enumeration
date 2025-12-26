@@ -157,12 +157,14 @@ Shrinking of the array and key deletion in the red-black tree are not implemente
 
 ## Copyright
 
-MR Research AG, 2023-2024
+MR Research AG, 2023 - 2025
+
 ## Authors
 
-Main author: Andrii Stepanov (AStepanov25)\
+Main author: Andrii Stepanov (AStepanov25)
+
 Contributors: Timo Hanke (timohanke), Yurii Pytomets (Pitometsu)
+
 ## License 
 
 Apache-2.0
-
