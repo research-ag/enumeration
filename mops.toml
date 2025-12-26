@@ -1,6 +1,6 @@
 [package]
 name = "enumeration"
-version = "0.1.1"
+version = "0.1.2"
 description = "Add-only set of keys with numbering and two-way lookup"
 repository = "https://github.com/research-ag/enumeration"
 keywords = [ "bijective", "map" ]
@@ -11,6 +11,9 @@ test = "2.1.1"
 
 [dependencies]
 core = "2.0.0"
+
+[requirements]
+moc = "1.0.0"
 
 [toolchain]
 moc = "1.0.0"
