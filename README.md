@@ -58,19 +58,19 @@ All subsequent accesses to data structures, by being based on the key's number i
 
 You need `mops` installed. In your project directory run:
 
-```
+```bash
 mops add enumeration
 ```
 
 In the Motoko source file import the package as:
 
-```
+```motoko
 import Enumeration "mo:enumeration";
 ```
 
 ### Example
 
-```
+```motoko
 let e = Enumeration.Enumeration<Blob>(Blob.compare, "");
 e.add("abc"); // -> 0
 e.add("aaa"); // -> 1
@@ -84,7 +84,7 @@ e.get(1); // -> "aaa"
 
 Run:
 
-```
+```bash
 git clone git@github.com:research-ag/enumeration.git
 mops install
 mops test

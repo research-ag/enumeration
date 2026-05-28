@@ -302,7 +302,7 @@ module {
         switch t {
           case (?(_, l, y, r)) {
 
-            let res = key.compare(array[y]);
+            let res = x.compare(array[y]);
             if (res == #less) {
               get_in_tree(x, l);
             } else if (res == #greater) {
