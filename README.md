@@ -66,6 +66,7 @@ In the Motoko source file import the package as:
 
 ```motoko
 import Enumeration "mo:enumeration";
+
 ```
 
 ### Example
@@ -78,6 +79,7 @@ e.add("abc"); // -> 0
 e.lookup("aaa"); // -> ?1
 e.get(0); // -> "abc"
 e.get(1); // -> "aaa"
+
 ```
 
 ### Build & test
@@ -170,7 +172,7 @@ Shrinking of the array and key deletion in the red-black tree are not implemente
 
 ## Copyright
 
-MR Research AG, 2023 - 2025
+MR Research AG, 2023 - 2026
 
 ## Authors
 
