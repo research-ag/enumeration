@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+jobs:
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: latest
+      - uses: caffeinelabs/setup-mops@v1
+      - run: |
+          mops toolchain init
+          mops install
+      - run: mops test
+
+  fmt:
+    name: Formatting Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: latest
+      - name: Prettier Check
+        run: |
+          npm install prettier prettier-plugin-motoko --no-save
+          npx -y prettier --plugin prettier-plugin-motoko --check '**/*.{mo,json,md}'
