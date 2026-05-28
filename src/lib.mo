@@ -14,14 +14,14 @@
 /// The data structure is optimized primarily for memory efficiency
 /// and secondarily for instruction efficiency.
 ///
-/// Copyright: 2023 - 2025 MR Research AG
+/// Copyright: 2023 - 2026 MR Research AG
 /// Main author: Andrii Stepanov (AStepanov25)
 /// Contributors: Timo Hanke (timohanke), Yurii Pytomets (Pitometsu)
 
 import Blob "mo:core/Blob";
 import Nat32 "mo:core/Nat32";
 import VarArray "mo:core/VarArray";
-import Prim "mo:⛔";
+import Runtime "mo:core/Runtime";
 
 module {
   /// Red-black tree of key `Nat`.
@@ -169,7 +169,7 @@ module {
     /// Runtime: O(1)
     public func get(index : Nat) : K {
       if (index < size_) { array[index] } else {
-        Prim.trap("Index out of bounds");
+        Runtime.trap("Index out of bounds");
       };
     };
 
@@ -241,10 +241,10 @@ module {
       func insert(tree : Tree) : Tree {
         switch tree {
           case (?(#B, left, y, right)) {
-            let res = Prim.blobCompare(key, array[y]);
-            if (res < 0) {
+            let res = key.compare(array[y]);
+            if (res == #less) {
               lbalance(insert(left), y, right);
-            } else if (res > 0) {
+            } else if (res == #greater) {
               rbalance(left, y, insert(right));
             } else {
               index := y;
@@ -252,10 +252,10 @@ module {
             };
           };
           case (?(#R, left, y, right)) {
-            let res = Prim.blobCompare(key, array[y]);
-            if (res < 0) {
+            let res = key.compare(array[y]);
+            if (res == #less) {
               ?(#R, insert(left), y, right);
-            } else if (res > 0) {
+            } else if (res == #greater) {
               ?(#R, left, y, insert(right));
             } else {
               index := y;
@@ -302,10 +302,10 @@ module {
         switch t {
           case (?(_, l, y, r)) {
 
-            let res = Prim.blobCompare(key, array[y]);
-            if (res < 0) {
+            let res = key.compare(array[y]);
+            if (res == #less) {
               get_in_tree(x, l);
-            } else if (res > 0) {
+            } else if (res == #greater) {
               get_in_tree(x, r);
             } else {
               ?y;
@@ -331,7 +331,7 @@ module {
     /// Runtime: O(1)
     public func get(index : Nat) : Blob {
       if (index < size_) { array[index] } else {
-        Prim.trap("Index out of bounds");
+        Runtime.trap("Index out of bounds");
       };
     };
 
