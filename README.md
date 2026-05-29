@@ -65,18 +65,18 @@ mops add enumeration
 In the Motoko source file import the package as:
 
 ```motoko
-import Enumeration "mo:enumeration";
+import { Enumeration } "mo:enumeration";
 
 ```
 
 ### Example
 
 ```motoko
-let e = Enumeration.Enumeration<Blob>(Blob.compare, "");
-e.add("abc"); // -> 0
-e.add("aaa"); // -> 1
-e.add("abc"); // -> 0
-e.lookup("aaa"); // -> ?1
+let e = Enumeration.new<Blob>("");
+e.add("abc", Blob.compare); // -> 0
+e.add("aaa", Blob.compare); // -> 1
+e.add("abc", Blob.compare); // -> 0
+e.lookup("aaa", Blob.compare); // -> ?1
 e.get(0); // -> "abc"
 e.get(1); // -> "aaa"
 
@@ -150,7 +150,7 @@ Notes:
 
 - Hits are more expensive in the rb-tree based data structures because the final comparison, if it is a match, has to compare the full 32 bytes.
 - For misses, the rb-tree based data structures are as fast as the hashmaps (v7, v8).
-- For enumeration the optimized class `EnumerationBlob` was used in the benchmark, not the generic class `Enumeration<Blob>`.
+- For enumeration the optimized module `EnumerationBlob` was used in the benchmark, not the generic module `Enumeration<Blob>`.
 
 ## Design
 

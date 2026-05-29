@@ -6,6 +6,7 @@
 
 - Updated `core` from `2.0.0` to `2.5.0`.
 - Updated `[requirements] moc` from `1.0.0` to `1.4.0`.
+- Converted API from class-based to static module (record type). `Enumeration` and `EnumerationBlob` are now directly stable.
 
 ## 0.1.3
 

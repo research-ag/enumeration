@@ -6,7 +6,7 @@
 ///
 /// Contributors: Timo Hanke (timohanke), Yurii Pytomets (Pitometsu)
 
-import Enumeration "../src";
+import { Enumeration; EnumerationBlob } "../src";
 import Array "mo:core/Array";
 import Blob "mo:core/Blob";
 import Principal "mo:core/Principal";
@@ -41,9 +41,9 @@ class RNG() {
 
 let n = 100;
 let r = RNG();
-let b = Enumeration.EnumerationBlob();
-let p = Enumeration.Enumeration(Principal.compare, Principal.fromBlob "");
-let t = Enumeration.Enumeration(Text.compare, "");
+let b = EnumerationBlob.new();
+let p = Enumeration.new<Principal>(Principal.fromBlob "");
+let t = Enumeration.new<Text>("");
 let blobs = Array.tabulate<Blob>(n, func(i) = r.blob());
 let principals = Array.tabulate<Principal>(n, func(i) = r.principal());
 let texts = Array.tabulate<Text>(n, func(i) = r.text());
@@ -71,8 +71,6 @@ suite(
           i += 1;
         };
 
-        b.unsafeUnshare(b.share());
-
         i := 0;
         while (i < n) {
           assert (b.lookup(blobs[i]) == ?i);
@@ -99,29 +97,27 @@ suite(
         assert (p.size() == 0);
         i := 0;
         while (i < n) {
-          assert (p.add(principals[i]) == i);
+          assert (p.add(principals[i], Principal.compare) == i);
           assert (p.size() == i + 1);
           i += 1;
         };
 
         i := 0;
         while (i < n) {
-          assert (p.add(principals[i]) == i);
+          assert (p.add(principals[i], Principal.compare) == i);
           assert (p.size() == n);
           i += 1;
         };
 
-        p.unsafeUnshare(p.share());
-
         i := 0;
         while (i < n) {
-          assert (p.lookup(principals[i]) == ?i);
+          assert (p.lookup(principals[i], Principal.compare) == ?i);
           i += 1;
         };
 
         i := 0;
         while (i < n) {
-          assert (p.lookup(r.principal()) == null);
+          assert (p.lookup(r.principal(), Principal.compare) == null);
           i += 1;
         };
 
@@ -139,29 +135,27 @@ suite(
         assert (t.size() == 0);
         i := 0;
         while (i < n) {
-          assert (t.add(texts[i]) == i);
+          assert (t.add(texts[i], Text.compare) == i);
           assert (t.size() == i + 1);
           i += 1;
         };
 
         i := 0;
         while (i < n) {
-          assert (t.add(texts[i]) == i);
+          assert (t.add(texts[i], Text.compare) == i);
           assert (t.size() == n);
           i += 1;
         };
 
-        t.unsafeUnshare(t.share());
-
         i := 0;
         while (i < n) {
-          assert (t.lookup(texts[i]) == ?i);
+          assert (t.lookup(texts[i], Text.compare) == ?i);
           i += 1;
         };
 
         i := 0;
         while (i < n) {
-          assert (t.lookup(r.text()) == null);
+          assert (t.lookup(r.text(), Text.compare) == null);
           i += 1;
         };
 
