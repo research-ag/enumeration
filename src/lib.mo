@@ -20,8 +20,9 @@
 
 import Blob "mo:core/Blob";
 import Nat32 "mo:core/Nat32";
-import VarArray "mo:core/VarArray";
+import Prim "mo:⛔";
 import Runtime "mo:core/Runtime";
+import VarArray "mo:core/VarArray";
 
 module {
   /// Red-black tree of key `Nat`.
@@ -241,10 +242,10 @@ module {
       func insert(tree : Tree) : Tree {
         switch tree {
           case (?(#B, left, y, right)) {
-            let res = key.compare(array[y]);
-            if (res == #less) {
+            let res = Prim.blobCompare(key, array[y]);
+            if (res < 0) {
               lbalance(insert(left), y, right);
-            } else if (res == #greater) {
+            } else if (res > 0) {
               rbalance(left, y, insert(right));
             } else {
               index := y;
@@ -252,10 +253,10 @@ module {
             };
           };
           case (?(#R, left, y, right)) {
-            let res = key.compare(array[y]);
-            if (res == #less) {
+            let res = Prim.blobCompare(key, array[y]);
+            if (res < 0) {
               ?(#R, insert(left), y, right);
-            } else if (res == #greater) {
+            } else if (res > 0) {
               ?(#R, left, y, insert(right));
             } else {
               index := y;
@@ -302,10 +303,10 @@ module {
         switch t {
           case (?(_, l, y, r)) {
 
-            let res = x.compare(array[y]);
-            if (res == #less) {
+            let res = Prim.blobCompare(x, array[y]);
+            if (res < 0) {
               get_in_tree(x, l);
-            } else if (res == #greater) {
+            } else if (res > 0) {
               get_in_tree(x, r);
             } else {
               ?y;
