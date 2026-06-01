@@ -20,6 +20,7 @@
 
 import Blob "mo:core/Blob";
 import Nat32 "mo:core/Nat32";
+import Order "mo:core/Order";
 import Prim "mo:⛔";
 import Runtime "mo:core/Runtime";
 import VarArray "mo:core/VarArray";
@@ -62,7 +63,7 @@ module {
   ///
   /// Example:
   /// ```motoko
-  /// let e = Enumeration.new<Blob>("");
+  /// let e = Enumeration.empty<Blob>("");
   /// ```
   public module Enumeration {
     public type Enumeration<K> = {
@@ -72,7 +73,7 @@ module {
       empty : K;
     };
 
-    public func new<K>(empty : K) : Enumeration<K> {
+    public func empty<K>(empty : K) : Enumeration<K> {
       {
         var array = [var empty];
         var size_ = 0;
@@ -81,17 +82,17 @@ module {
       };
     };
 
-    /// Add `key` to enumeration. Returns `size` if the key in new to the enumeration and index of key in enumeration otherwise.
+    /// Add `key` to enumeration. Returns `size` if the key is new to the enumeration and index of key in enumeration otherwise.
     ///
     /// Example:
     /// ```motoko
-    /// let e = Enumeration.new<Blob>("");
+    /// let e = Enumeration.empty<Blob>("");
     /// assert(e.add("abc", Blob.compare) == 0);
     /// assert(e.add("aaa", Blob.compare) == 1);
     /// assert(e.add("abc", Blob.compare) == 0);
     /// ```
     /// Runtime: O(log(n))
-    public func add<K>(self : Enumeration<K>, key : K, compare : (K, K) -> { #equal; #greater; #less }) : Nat {
+    public func add<K>(self : Enumeration<K>, key : K, compare : (implicit : (K, K) -> Order.Order)) : Nat {
       var index = self.size_;
 
       func insert(tree : Tree) : Tree {
@@ -143,7 +144,7 @@ module {
     ///
     /// Example:
     /// ```motoko
-    /// let e = Enumeration.new<Blob>("");
+    /// let e = Enumeration.empty<Blob>("");
     /// assert(e.add("abc", Blob.compare) == 0);
     /// assert(e.add("aaa", Blob.compare) == 1);
     /// assert(e.lookup("abc", Blob.compare) == ?0);
@@ -151,7 +152,7 @@ module {
     /// assert(e.lookup("bbb", Blob.compare) == null);
     /// ```
     /// Runtime: O(log(n))
-    public func lookup<K>(self : Enumeration<K>, key : K, compare : (K, K) -> { #equal; #greater; #less }) : ?Nat {
+    public func lookup<K>(self : Enumeration<K>, key : K, compare : (implicit : (K, K) -> Order.Order)) : ?Nat {
       func get_in_tree(x : K, t : Tree) : ?Nat {
         switch t {
           case (?(_, l, y, r)) {
@@ -168,20 +169,40 @@ module {
       get_in_tree(key, self.tree);
     };
 
-    /// Returns `K` with index `index`. Traps it index is out of bounds.
+    /// Returns `K` with index `index`.
+    /// Traps if `index >= size`.
     ///
     /// Example:
     /// ```motoko
-    /// let e = Enumeration.new<Blob>("");
+    /// let e = Enumeration.empty<Blob>("");
     /// assert(e.add("abc", Blob.compare) == 0);
     /// assert(e.add("aaa", Blob.compare) == 1);
-    /// assert(e.get(0) == "abc");
-    /// assert(e.get(1) == "aaa");
+    /// assert(e.at(0) == "abc");
+    /// assert(e.at(1) == "aaa");
     /// ```
     /// Runtime: O(1)
-    public func get<K>(self : Enumeration<K>, index : Nat) : K {
+    public func at<K>(self : Enumeration<K>, index : Nat) : K {
       if (index < self.size_) { self.array[index] } else {
         Runtime.trap("Index out of bounds");
+      };
+    };
+
+    /// Returns `K` with index `index` as an option.
+    /// Returns `null` when `index >= size`.
+    ///
+    /// Example:
+    /// ```motoko
+    /// let e = Enumeration.empty<Blob>("");
+    /// assert(e.add("abc", Blob.compare) == 0);
+    /// assert(e.add("aaa", Blob.compare) == 1);
+    /// assert(e.get(0) == ?"abc");
+    /// assert(e.get(1) == ?"aaa");
+    /// assert(e.get(2) == null);
+    /// ```
+    /// Runtime: O(1)
+    public func get<K>(self : Enumeration<K>, index : Nat) : ?K {
+      if (index < self.size_) { ?self.array[index] } else {
+        null;
       };
     };
 
@@ -189,7 +210,7 @@ module {
     ///
     /// Example:
     /// ```motoko
-    /// let e = Enumeration.new<Blob>("");
+    /// let e = Enumeration.empty<Blob>("");
     /// assert(e.add("abc", Blob.compare) == 0);
     /// assert(e.add("aaa", Blob.compare) == 1);
     /// assert(e.size() == 2);
@@ -206,7 +227,7 @@ module {
       var tree : Tree;
     };
 
-    public func new() : EnumerationBlob {
+    public func empty() : EnumerationBlob {
       {
         var array = [var ""];
         var size_ = 0;
@@ -214,11 +235,11 @@ module {
       };
     };
 
-    /// Add `key` to enumeration. Returns `size` if the key in new to the enumeration and index of key in enumeration otherwise.
+    /// Add `key` to enumeration. Returns `size` if the key is new to the enumeration and index of key in enumeration otherwise.
     ///
     /// Example:
     /// ```motoko
-    /// let e = EnumerationBlob.new();
+    /// let e = EnumerationBlob.empty();
     /// assert(e.add("abc") == 0);
     /// assert(e.add("aaa") == 1);
     /// assert(e.add("abc") == 0);
@@ -278,7 +299,7 @@ module {
     ///
     /// Example:
     /// ```motoko
-    /// let e = EnumerationBlob.new();
+    /// let e = EnumerationBlob.empty();
     /// assert(e.add("abc") == 0);
     /// assert(e.add("aaa") == 1);
     /// assert(e.lookup("abc") == ?0);
@@ -306,20 +327,40 @@ module {
       get_in_tree(key, self.tree);
     };
 
-    /// Returns `K` with index `index`. Traps it index is out of bounds.
+    /// Returns `K` with index `index`.
+    /// Traps it `index >= size`.
     ///
     /// Example:
     /// ```motoko
-    /// let e = EnumerationBlob.new();
+    /// let e = EnumerationBlob.empty();
     /// assert(e.add("abc") == 0);
     /// assert(e.add("aaa") == 1);
-    /// assert(e.get(0) == "abc");
-    /// assert(e.get(1) == "aaa");
+    /// assert(e.at(0) == "abc");
+    /// assert(e.at(1) == "aaa");
     /// ```
     /// Runtime: O(1)
-    public func get(self : EnumerationBlob, index : Nat) : Blob {
+    public func at(self : EnumerationBlob, index : Nat) : Blob {
       if (index < self.size_) { self.array[index] } else {
         Runtime.trap("Index out of bounds");
+      };
+    };
+
+    /// Returns `K` with index `index`.
+    /// Returns `null` when `index >= size`.
+    ///
+    /// Example:
+    /// ```motoko
+    /// let e = EnumerationBlob.empty();
+    /// assert(e.add("abc") == 0);
+    /// assert(e.add("aaa") == 1);
+    /// assert(e.get(0) == ?"abc");
+    /// assert(e.get(1) == ?"aaa");
+    /// assert(e.get(2) == null);
+    /// ```
+    /// Runtime: O(1)
+    public func get(self : EnumerationBlob, index : Nat) : ?Blob {
+      if (index < self.size_) { ?self.array[index] } else {
+        null;
       };
     };
 
@@ -327,7 +368,7 @@ module {
     ///
     /// Example:
     /// ```motoko
-    /// let e = EnumerationBlob.new();
+    /// let e = EnumerationBlob.empty();
     /// assert(e.add("abc") == 0);
     /// assert(e.add("aaa") == 1);
     /// assert(e.size() == 2);
