@@ -41,9 +41,9 @@ class RNG() {
 
 let n = 100;
 let r = RNG();
-let b = EnumerationBlob.new();
-let p = Enumeration.new<Principal>(Principal.fromBlob "");
-let t = Enumeration.new<Text>("");
+let b = EnumerationBlob.empty();
+let p = Enumeration.empty<Principal>(Principal.fromBlob "");
+let t = Enumeration.empty<Text>("");
 let blobs = Array.tabulate<Blob>(n, func(i) = r.blob());
 let principals = Array.tabulate<Principal>(n, func(i) = r.principal());
 let texts = Array.tabulate<Text>(n, func(i) = r.text());
@@ -85,7 +85,7 @@ suite(
 
         i := 0;
         while (i < n) {
-          assert (b.get(i) == blobs[i]);
+          assert (b.at(i) == blobs[i]);
           i += 1;
         };
       },
@@ -123,7 +123,7 @@ suite(
 
         i := 0;
         while (i < n) {
-          assert (p.get(i) == principals[i]);
+          assert (p.at(i) == principals[i]);
           i += 1;
         };
       },
@@ -161,7 +161,7 @@ suite(
 
         i := 0;
         while (i < n) {
-          assert (t.get(i) == texts[i]);
+          assert (t.at(i) == texts[i]);
           i += 1;
         };
       },

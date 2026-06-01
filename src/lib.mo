@@ -93,12 +93,15 @@ module {
     /// ```
     /// Runtime: O(log(n))
     public func add<K>(self : Enumeration<K>, key : K, compare : (implicit : (K, K) -> Order.Order)) : Nat {
-      var index = self.size_;
+      let array = self.array;
+      let size = self.size_;
+
+      var index = size;
 
       func insert(tree : Tree) : Tree {
         switch tree {
           case (?(#B, left, y, right)) {
-            switch (compare(key, self.array[y])) {
+            switch (compare(key, array[y])) {
               case (#less) lbalance(insert(left), y, right);
               case (#greater) rbalance(left, y, insert(right));
               case (#equal) {
@@ -108,7 +111,7 @@ module {
             };
           };
           case (?(#R, left, y, right)) {
-            switch (compare(key, self.array[y])) {
+            switch (compare(key, array[y])) {
               case (#less) ?(#R, insert(left), y, right);
               case (#greater) ?(#R, left, y, insert(right));
               case (#equal) {
@@ -118,8 +121,8 @@ module {
             };
           };
           case (null) {
-            index := self.size_;
-            ?(#R, null, self.size_, null);
+            index := size;
+            ?(#R, null, size, null);
           };
         };
       };
@@ -129,11 +132,11 @@ module {
         case other other;
       };
 
-      if (index == self.size_) {
-        if (self.size_ == self.array.size()) {
-          self.array := VarArray.tabulate<K>(next_size(self.size_), func(i) = if (i < self.size_) { self.array[i] } else { self.empty });
+      if (index == size) {
+        if (size == array.size()) {
+          self.array := VarArray.tabulate<K>(next_size(size), func(i) = if (i < size) { array[i] } else { self.empty });
         };
-        self.array[self.size_] := key;
+        self.array[size] := key;
         self.size_ += 1;
       };
 
@@ -153,10 +156,12 @@ module {
     /// ```
     /// Runtime: O(log(n))
     public func lookup<K>(self : Enumeration<K>, key : K, compare : (implicit : (K, K) -> Order.Order)) : ?Nat {
+      let array = self.array;
+
       func get_in_tree(x : K, t : Tree) : ?Nat {
         switch t {
           case (?(_, l, y, r)) {
-            switch (compare(x, self.array[y])) {
+            switch (compare(x, array[y])) {
               case (#less) get_in_tree(x, l);
               case (#equal) ?y;
               case (#greater) get_in_tree(x, r);
@@ -246,12 +251,15 @@ module {
     /// ```
     /// Runtime: O(log(n))
     public func add(self : EnumerationBlob, key : Blob) : Nat {
-      var index = self.size_;
+      let array = self.array;
+      let size = self.size_;
+
+      var index = size;
 
       func insert(tree : Tree) : Tree {
         switch tree {
           case (?(#B, left, y, right)) {
-            let res = Prim.blobCompare(key, self.array[y]);
+            let res = Prim.blobCompare(key, array[y]);
             if (res < 0) {
               lbalance(insert(left), y, right);
             } else if (res > 0) {
@@ -262,7 +270,7 @@ module {
             };
           };
           case (?(#R, left, y, right)) {
-            let res = Prim.blobCompare(key, self.array[y]);
+            let res = Prim.blobCompare(key, array[y]);
             if (res < 0) {
               ?(#R, insert(left), y, right);
             } else if (res > 0) {
@@ -273,8 +281,8 @@ module {
             };
           };
           case (null) {
-            index := self.size_;
-            ?(#R, null, self.size_, null);
+            index := size;
+            ?(#R, null, size, null);
           };
         };
       };
@@ -284,11 +292,11 @@ module {
         case other other;
       };
 
-      if (index == self.size_) {
-        if (self.size_ == self.array.size()) {
-          self.array := VarArray.tabulate<Blob>(next_size(self.size_), func(i) = if (i < self.size_) { self.array[i] } else { "" });
+      if (index == size) {
+        if (size == array.size()) {
+          self.array := VarArray.tabulate<Blob>(next_size(size), func(i) = if (i < self.size_) { array[i] } else { "" });
         };
-        self.array[self.size_] := key;
+        self.array[size] := key;
         self.size_ += 1;
       };
 
@@ -308,10 +316,12 @@ module {
     /// ```
     /// Runtime: O(log(n))
     public func lookup(self : EnumerationBlob, key : Blob) : ?Nat {
+      let array = self.array;
+
       func get_in_tree(x : Blob, t : Tree) : ?Nat {
         switch t {
           case (?(_, l, y, r)) {
-            let res = Prim.blobCompare(x, self.array[y]);
+            let res = Prim.blobCompare(x, array[y]);
             if (res < 0) {
               get_in_tree(x, l);
             } else if (res > 0) {
