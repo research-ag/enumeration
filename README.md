@@ -72,13 +72,20 @@ import { Enumeration } "mo:enumeration";
 ### Example
 
 ```motoko
-let e = Enumeration.new<Blob>("");
+let e = Enumeration.empty<Blob>("");
 e.add("abc", Blob.compare); // -> 0
 e.add("aaa", Blob.compare); // -> 1
 e.add("abc", Blob.compare); // -> 0
+
 e.lookup("aaa", Blob.compare); // -> ?1
-e.get(0); // -> "abc"
-e.get(1); // -> "aaa"
+
+e.get(0); // -> ?"abc"
+e.get(1); // -> ?"aaa"
+e.get(2); // -> null
+
+e.at(0); // -> "abc"
+e.at(1); // -> "aaa"
+e.at(2); // -> trap "Index out of bounds"
 
 ```
 
