@@ -97,27 +97,27 @@ suite(
         assert (p.size() == 0);
         i := 0;
         while (i < n) {
-          assert (p.add(principals[i], Principal.compare) == i);
+          assert (p.add(principals[i]) == i);
           assert (p.size() == i + 1);
           i += 1;
         };
 
         i := 0;
         while (i < n) {
-          assert (p.add(principals[i], Principal.compare) == i);
+          assert (p.add(principals[i]) == i);
           assert (p.size() == n);
           i += 1;
         };
 
         i := 0;
         while (i < n) {
-          assert (p.lookup(principals[i], Principal.compare) == ?i);
+          assert (p.lookup(principals[i]) == ?i);
           i += 1;
         };
 
         i := 0;
         while (i < n) {
-          assert (p.lookup(r.principal(), Principal.compare) == null);
+          assert (p.lookup(r.principal()) == null);
           i += 1;
         };
 
@@ -135,27 +135,27 @@ suite(
         assert (t.size() == 0);
         i := 0;
         while (i < n) {
-          assert (t.add(texts[i], Text.compare) == i);
+          assert (t.add(texts[i]) == i);
           assert (t.size() == i + 1);
           i += 1;
         };
 
         i := 0;
         while (i < n) {
-          assert (t.add(texts[i], Text.compare) == i);
+          assert (t.add(texts[i]) == i);
           assert (t.size() == n);
           i += 1;
         };
 
         i := 0;
         while (i < n) {
-          assert (t.lookup(texts[i], Text.compare) == ?i);
+          assert (t.lookup(texts[i]) == ?i);
           i += 1;
         };
 
         i := 0;
         while (i < n) {
-          assert (t.lookup(r.text(), Text.compare) == null);
+          assert (t.lookup(r.text()) == null);
           i += 1;
         };
 
