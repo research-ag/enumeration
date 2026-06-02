@@ -7,15 +7,15 @@
 
 `Enumeration<K>` implements an add-only set of elements of type K where the
 elements are numbered in the order in which they are added to the set.
-The elements are called *keys* and a key's number in the order is called *index*.
-Lookups are possible in both ways, from key to index and from 
+The elements are called _keys_ and a key's number in the order is called _index_.
+Lookups are possible in both ways, from key to index and from
 index to key.
 Memory space is `O(n)`.
 Time complexities are:
 
-* add a key: `O(log n)` average, `O(n)` worst-case
-* lookup a key: `O(log n)`
-* lookup an index: `O(1)`
+- add a key: `O(log n)` average, `O(n)` worst-case
+- lookup a key: `O(log n)`
+- lookup an index: `O(1)`
 
 The data structure is optimized primarily for memory efficiency
 and secondarily for instruction efficiency (time).
@@ -31,9 +31,9 @@ The API documentation can be found [here](https://mops.one/enumeration/docs/lib)
 
 For updates, help, questions, feedback and other requests related to this package join us on:
 
-* [OpenChat group](https://oc.app/2zyqk-iqaaa-aaaar-anmra-cai)
-* [Twitter](https://twitter.com/mr_research_ag)
-* [Dfinity forum](https://forum.dfinity.org/)
+- [OpenChat group](https://oc.app/2zyqk-iqaaa-aaaar-anmra-cai)
+- [Twitter](https://twitter.com/mr_research_ag)
+- [Dfinity forum](https://forum.dfinity.org/)
 
 ### Motivation
 
@@ -41,14 +41,14 @@ Canister services often track their users by principal.
 Per-user data is then stored in a tree or hashmap where the key is the principal and the value is the user data.
 
 The motivation of this data structure is to enumerate the users in the order that they were registered.
-This result in a permanent user number for each user.
+This results in a permanent user number for each user.
 Instead of a tree, the user data can then be stored in a linear structure such as Buffer or [Vector](https://mops.one/vector) which has `O(1)` access.
 
-To this end, the present data structure provides an "enumerated set" of keys where the key type `K` is a type parameter (e.g. `Principal`). 
+To this end, the present data structure provides an "enumerated set" of keys where the key type `K` is a type parameter (e.g. `Principal`).
 The set elements (keys) are consecutively numbered 0,1,2,.. in the order in which they are added.
 Keys cannot be deleted.
 
-The lookup from a key to its number is tree based and the time complexity is `O(log n)`. 
+The lookup from a key to its number is tree based and the time complexity is `O(log n)`.
 However, the advantage of taking this approach is that this one lookup in `Enumeration` can be the _only_ lookup in the entire canister that has complexity `O(log n)`.
 All subsequent accesses to data structures, by being based on the key's number instead of the key, can be `O(1)`.
 
@@ -57,33 +57,100 @@ All subsequent accesses to data structures, by being based on the key's number i
 ### Install with mops
 
 You need `mops` installed. In your project directory run:
-```
+
+```bash
 mops add enumeration
 ```
 
-In the Motoko source file import the package as:
-```
-import Enumeration "mo:enumeration";
+In the Motoko source file import the module you need. Import either
+`Enumeration` (generic) or `BlobEnumeration` (the optimized `Blob` variant),
+but not both in the same module — for `Blob` keys their types coincide and the
+method names would be ambiguous:
+
+```motoko
+import { Enumeration } "mo:enumeration";
+
 ```
 
 ### Example
 
-```
-let e = Enumeration.Enumeration<Blob>(Blob.compare, "");
+The `compare` function is an implicit argument: it is resolved automatically
+from the key type as long as that type's module (here `mo:core/Text`) is imported.
+
+```motoko
+import { Enumeration } "mo:enumeration";
+import Text "mo:core/Text";
+
+let e = Enumeration.empty<Text>();
 e.add("abc"); // -> 0
 e.add("aaa"); // -> 1
 e.add("abc"); // -> 0
+
 e.lookup("aaa"); // -> ?1
-e.get(0); // -> "abc"
-e.get(1); // -> "aaa"
+e.containsKey("aaa"); // -> true
+
+e.get(0); // -> ?"abc"
+e.get(1); // -> ?"aaa"
+e.get(2); // -> null
+
+e.at(0); // -> "abc"
+e.at(1); // -> "aaa"
+e.at(2); // -> trap "Index out of bounds"
+
+e.size(); // -> 2
+e.sliceToArray(0, 2); // -> ["abc", "aaa"]
+
 ```
+
+For `Blob` keys, prefer the optimized `BlobEnumeration` module.
+It is functionally equivalent to `Enumeration.empty<Blob>()` used with
+`Blob.compare`, but faster: its red-black tree comparisons use the primitive
+`Prim.blobCompare` instead of `Blob.compare`.
+Its operations also take no `compare` argument:
+
+```motoko
+import { BlobEnumeration } "mo:enumeration";
+
+let e = BlobEnumeration.empty();
+e.add("abc"); // -> 0
+e.lookup("abc"); // -> ?0
+
+```
+
 ### Build & test
 
 Run:
-```
+
+```bash
 git clone git@github.com:research-ag/enumeration.git
 mops install
 mops test
+```
+
+### Examples
+
+The [`examples/`](examples/) directory is a self-contained mops project (with
+its own `mops.toml`) that demonstrates the library in a canister. The canonical
+example, [`examples/src/Principal.mo`](examples/src/Principal.mo), assigns
+permanent user numbers to principals. Type-check and build it with:
+
+```bash
+cd examples
+mops install
+mops check   # type-check
+mops build   # compile the canister to Wasm
+```
+
+Keeping the `Principal` usage in an example (rather than in the test suite)
+means the tests themselves do not depend on `mo:core/Principal`.
+
+## Formatting
+
+This project uses `prettier` with `prettier-plugin-motoko` for formatting.
+To format the code, run:
+
+```bash
+npx -y prettier --plugin prettier-plugin-motoko --write '**/*.{mo,json,md}'
 ```
 
 ## Benchmarks
@@ -92,7 +159,9 @@ Benchmarking code can be found here: [canister-profiling](https://github.com/res
 
 We compare `Enumeration<K>` against various other maps of type `K -> Nat`. The functionality of these other maps is not exactly the same but sufficiently overlaps with Enumeration that a comparison is possible. It should be noted that the other maps do not have the inverse map `Nat -> K` like Enumeration does. On the other hand, they offer deletion which Enumeration does not. However, the map `K -> Nat` is tree-based in all cases hence we can compare insertion and lookup operations both in terms of instructions and memory used.
 
-The results below have been obtained with `moc 0.9.2`.
+The results below have been obtained with `moc 0.9.2` (and `map` v7/v8); they
+are historical and should be read as indicative orders of magnitude rather than
+exact figures for current compiler versions.
 
 ### Memory
 
@@ -101,18 +170,18 @@ We compare that against an array of length N with the same entries and take the 
 This tells us the memory overhead that the data structure has over an array and eliminates the effect of boxing, which depend on type and value.
 We finally divide by N to get the memory overhead per entry.
 
-The results are as follows (N = 4,096), unit is bytes per entry: 
+The results are as follows (N = 4,096), unit is bytes per entry:
 
-|btree|enumeration|rb_tree|map v7|map v8|
-|---|---|---|---|---|
-|20.9|24|48|36*|52|
+| btree | enumeration | rb_tree | map v7 | map v8 |
+| ----- | ----------- | ------- | ------ | ------ |
+| 20.9  | 24          | 48      | 36\*   | 52     |
 
-For example, if `K` is one of `Nat32, Nat64, Nat` and the values are not boxed (e.g. < 2^30) then we know that in an array each such entry is responsible for 4 bytes on the heap. 
+For example, if `K` is one of `Nat32, Nat64, Nat` and the values are not boxed (e.g. < 2^30) then we know that in an array each such entry is responsible for 4 bytes on the heap.
 Hence, by the table, each such entry in an `Enumeration<K>` is responsible for `4 + 24 = 28` bytes on the heap.
 As another example, we know that a 32-byte `Blob` as an array entry is responsible for `32 + 12 = 44` bytes.
 Hence, adding a 32-byte entry to an `Enumeration<Blob>` will allocate `44 + 24 = 68` bytes on the heap.
 
-_* Note: map v7 has shown an unexpected type dependency which we have not investigated further.
+\_\* Note: map v7 has shown an unexpected type dependency which we have not investigated further.
 The given result is for type `Blob`.
 The data structure may be more efficient for type `Nat32`.
 
@@ -122,42 +191,46 @@ For the time benchmark we use 32 byte `Blob`s as keys.
 We insert N random blobs into the map.
 Then we look up several of the keys and take the average.
 In one run the keys are actually in the map already ("hits"),
-in the other run the keys are not in the map ("misses").  
+in the other run the keys are not in the map ("misses").
 
-The results are as follows (N = 4,096), unit is instructions per lookup: 
+The results are as follows (N = 4,096), unit is instructions per lookup:
 
-||btree|enumeration|rb_tree|map v7|map v8|
-|---|---|---|---|---|---|
-|hits|4972|2519|2483|2060|1934|
-|misses|4972|2026|1983|2060|1934|
+|        | btree | enumeration | rb_tree | map v7 | map v8 |
+| ------ | ----- | ----------- | ------- | ------ | ------ |
+| hits   | 4972  | 2519        | 2483    | 2060   | 1934   |
+| misses | 4972  | 2026        | 1983    | 2060   | 1934   |
 
 Notes:
 
-* Hits are more expensive in the rb-tree based data structures because the final comparison, if it is a match, has to compare the full 32 bytes.
-* For misses, the rb-tree based data structures are as fast as the hashmaps (v7, v8).
-* For enumeration the optimized class `EnumerationBlob` was used in the benchmark, not the generic class `Enumeration<Blob>`.
+- Hits are more expensive in the rb-tree based data structures because the final comparison, if it is a match, has to compare the full 32 bytes.
+- For misses, the rb-tree based data structures are as fast as the hashmaps (v7, v8).
+- For enumeration the optimized module `BlobEnumeration` was used in the benchmark, not the generic module `Enumeration<Blob>`.
 
 ## Design
 
 The underlying data structure for the map `Nat -> K` is an array that holds reserve space and is grown with an algorithm similar to Buffer.
 The underlying data structure for the map `K -> Nat` is a red-black tree.
-The two data structures are combined into one for memory efficiency. 
+The two data structures are combined into one for memory efficiency.
 In particular, each key is stored only once, not twice.
 This is particularly important if the keys are long (e.g. `Principal`s).
 
 ## Implementation notes
 
-The red-black tree is in fact a tree from `Nat -> Nat` 
+The red-black tree is in fact a tree from `Nat -> Nat`
 and the comparison operation first looks up the keys in the array and then compares those.
 This makes lookups by key slightly slower than in the RBTree from motoko-base
 (as seen in the benchmark)
 but is a necessary trade-off to achieve memory efficiency.
 
-Shrinking of the array and key deletion in the red-black tree are not implemented because Enumeration does not allow key removal. 
+Shrinking of the array and key deletion in the red-black tree are not implemented because Enumeration does not allow key removal.
+
+The `BlobEnumeration` module is a performance-specialized variant for `Blob` keys.
+It is functionally equivalent to `Enumeration<Blob>` used with `Blob.compare`, but its red-black tree comparisons use the primitive `Prim.blobCompare` rather than `Blob.compare`, which makes it faster.
+This is why the time benchmark above uses `BlobEnumeration` rather than the generic `Enumeration<Blob>`.
 
 ## Copyright
 
-MR Research AG, 2023 - 2025
+MR Research AG, 2023 - 2026
 
 ## Authors
 
@@ -165,6 +238,6 @@ Main author: Andrii Stepanov (AStepanov25)
 
 Contributors: Timo Hanke (timohanke), Yurii Pytomets (Pitometsu)
 
-## License 
+## License
 
 Apache-2.0

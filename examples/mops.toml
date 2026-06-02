@@ -1,0 +1,9 @@
+[canisters]
+main = "src/main.mo"
+
+[dependencies]
+core = "2.5.0"
+enumeration = "../"
+
+[toolchain]
+moc = "1.6.0"
