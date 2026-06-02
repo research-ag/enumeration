@@ -5,7 +5,7 @@
 - Re-write of the collections as static records instead of classes that can be declared stable directly.
 - Re-write of the API closely following `core/List` and `core/Map`.
 - Removed requirement to provide a sentinel value to the constructor.
-- Made `compare` function argument implicit. 
+- Made `compare` function argument implicit.
 - Added new functions `insert`, `containsKey`, `isEmpty`, `range`, and `sliceToArray`.
 - Renamed the `EnumerationBlob` module to `BlobEnumeration`.
 - Added `examples/` project
