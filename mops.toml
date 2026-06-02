@@ -3,11 +3,8 @@ name = "enumeration"
 version = "0.2.0"
 description = "Add-only set of keys with numbering and two-way lookup"
 repository = "https://github.com/research-ag/enumeration"
-keywords = [ "bijective", "map" ]
+keywords = [ "bijective", "map", "list" ]
 license = "Apache-2.0"
-
-[dev-dependencies]
-test = "2.1.2"
 
 [dependencies]
 core = "2.5.0"

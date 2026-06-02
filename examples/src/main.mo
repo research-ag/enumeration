@@ -12,7 +12,7 @@
 /// Copyright: 2023 - 2026 MR Research AG
 
 import { Enumeration } "mo:enumeration";
-import Principal "mo:core/Principal";
+import _Principal "mo:core/Principal";
 
 persistent actor Users {
   // `Enumeration` is composed of stable types, so it can be held directly in
