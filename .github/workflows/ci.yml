@@ -36,10 +36,10 @@ jobs:
           mops install
       - name: Type-check examples
         working-directory: examples
-        run: mops check
+        run: mops check --verbose
       - name: Build examples
         working-directory: examples
-        run: mops build
+        run: mops build --verbose
 
   fmt:
     name: Formatting Check
