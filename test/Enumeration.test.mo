@@ -10,15 +10,12 @@ import { Enumeration } "../src";
 import RNG "RNG";
 import Array "mo:core/Array";
 import Iter "mo:core/Iter";
-import Principal "mo:core/Principal";
 import Text "mo:core/Text";
 import { test; suite } "mo:test";
 
 let n = 100;
 let r = RNG.RNG();
-let p = Enumeration.empty<Principal>();
 let t = Enumeration.empty<Text>();
-let principals = Array.tabulate<Principal>(n, func(i) = r.principal());
 let texts = Array.tabulate<Text>(n, func(i) = r.text());
 
 var i = 0;
@@ -26,44 +23,6 @@ var i = 0;
 suite(
   "Enumeration",
   func() {
-    test(
-      "Principal",
-      func() {
-        assert (p.size() == 0);
-        i := 0;
-        while (i < n) {
-          assert (p.add(principals[i]) == i);
-          assert (p.size() == i + 1);
-          i += 1;
-        };
-
-        i := 0;
-        while (i < n) {
-          assert (p.add(principals[i]) == i);
-          assert (p.size() == n);
-          i += 1;
-        };
-
-        i := 0;
-        while (i < n) {
-          assert (p.lookup(principals[i]) == ?i);
-          i += 1;
-        };
-
-        i := 0;
-        while (i < n) {
-          assert (p.lookup(r.principal()) == null);
-          i += 1;
-        };
-
-        i := 0;
-        while (i < n) {
-          assert (p.at(i) == principals[i]);
-          i += 1;
-        };
-      },
-    );
-
     test(
       "Text",
       func() {

@@ -12,6 +12,7 @@
 ### Added
 
 - `insert` (returns `(isNew, index)`), `containsKey`, `isEmpty`, `range`, and `sliceToArray` to both `Enumeration` and `EnumerationBlob`.
+- An `examples/` project (own `mops.toml`) demonstrating canister usage with `Principal` keys, built and type-checked in CI. The test suite no longer depends on `mo:core/Principal`.
 
 ## 0.1.3
 

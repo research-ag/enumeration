@@ -127,6 +127,23 @@ mops install
 mops test
 ```
 
+### Examples
+
+The [`examples/`](examples/) directory is a self-contained mops project (with
+its own `mops.toml`) that demonstrates the library in a canister. The canonical
+example, [`examples/src/Principal.mo`](examples/src/Principal.mo), assigns
+permanent user numbers to principals. Type-check and build it with:
+
+```bash
+cd examples
+mops install
+mops check   # type-check
+mops build   # compile the canister to Wasm
+```
+
+Keeping the `Principal` usage in an example (rather than in the test suite)
+means the tests themselves do not depend on `mo:core/Principal`.
+
 ## Formatting
 
 This project uses `prettier` with `prettier-plugin-motoko` for formatting.

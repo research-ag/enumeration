@@ -1,0 +1,17 @@
+[package]
+name = "enumeration-examples"
+version = "0.0.0"
+description = "Examples for the enumeration package"
+
+[dependencies]
+core = "2.5.0"
+enumeration = "../"
+
+[canisters]
+principal = "src/Principal.mo"
+
+[requirements]
+moc = "1.0.0"
+
+[toolchain]
+moc = "1.8.2"

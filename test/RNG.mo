@@ -8,9 +8,9 @@
 
 import Array "mo:core/Array";
 import Blob "mo:core/Blob";
+import Char "mo:core/Char";
 import Nat8 "mo:core/Nat8";
-import Principal "mo:core/Principal";
-import Text "mo:core/Text";
+import Nat32 "mo:core/Nat32";
 
 module {
   public class RNG() {
@@ -27,14 +27,15 @@ module {
       Blob.fromArray(a);
     };
 
-    public func maxBlob() : Blob {
-      let a = Array.tabulate<Nat8>(29, func(i) = Nat8.fromNat(0));
-      Blob.fromArray(a);
+    public func text() : Text {
+      var t = "";
+      var j = 0;
+      while (j < 24) {
+        // map to a lowercase letter 'a'..'z'
+        t #= Char.toText(Char.fromNat32(97 + Nat32.fromNat(next() % 26)));
+        j += 1;
+      };
+      t;
     };
-
-    public func principal() : Principal = Principal.fromBlob(blob());
-    public func maxPrincipal() : Principal = Principal.fromBlob(maxBlob());
-    public func text() : Text = Principal.toText(Principal.fromBlob(blob()));
-    public func maxText() : Text = Principal.toText(Principal.fromBlob(maxBlob()));
   };
 };
