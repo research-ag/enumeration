@@ -341,11 +341,11 @@ module {
   /// `Blob.compare`, but faster: the red-black tree comparisons use the
   /// primitive `Prim.blobCompare` instead of `Blob.compare`. Prefer this
   /// module whenever the keys are `Blob`s.
-  public module EnumerationBlob {
+  public module BlobEnumeration {
     /// The enumeration state. It consists only of stable types, so a value can
     /// be stored directly in a `stable` variable. The fields are an
     /// implementation detail; operate on it through the functions below.
-    public type EnumerationBlob = {
+    public type BlobEnumeration = {
       var array : [var Blob];
       var size_ : Nat;
       var tree : Tree;
@@ -355,10 +355,10 @@ module {
     ///
     /// Example:
     /// ```motoko
-    /// let e = EnumerationBlob.empty();
+    /// let e = BlobEnumeration.empty();
     /// ```
     /// Runtime: O(1)
-    public func empty() : EnumerationBlob {
+    public func empty() : BlobEnumeration {
       {
         var array = [var ""];
         var size_ = 0;
@@ -373,13 +373,13 @@ module {
     ///
     /// Example:
     /// ```motoko
-    /// let e = EnumerationBlob.empty();
+    /// let e = BlobEnumeration.empty();
     /// assert(e.insert("abc") == (true, 0));
     /// assert(e.insert("aaa") == (true, 1));
     /// assert(e.insert("abc") == (false, 0));
     /// ```
     /// Runtime: O(log(n))
-    public func insert(self : EnumerationBlob, key : Blob) : (Bool, Nat) {
+    public func insert(self : BlobEnumeration, key : Blob) : (Bool, Nat) {
       let array = self.array;
       let size = self.size_;
 
@@ -438,19 +438,19 @@ module {
     ///
     /// Example:
     /// ```motoko
-    /// let e = EnumerationBlob.empty();
+    /// let e = BlobEnumeration.empty();
     /// assert(e.add("abc") == 0);
     /// assert(e.add("aaa") == 1);
     /// assert(e.add("abc") == 0);
     /// ```
     /// Runtime: O(log(n))
-    public func add(self : EnumerationBlob, key : Blob) : Nat = insert(self, key).1;
+    public func add(self : BlobEnumeration, key : Blob) : Nat = insert(self, key).1;
 
     /// Returns `?index`, where `index` is the position of `key` in the order it was added, or `null` if `key` is not present.
     ///
     /// Example:
     /// ```motoko
-    /// let e = EnumerationBlob.empty();
+    /// let e = BlobEnumeration.empty();
     /// assert(e.add("abc") == 0);
     /// assert(e.add("aaa") == 1);
     /// assert(e.lookup("abc") == ?0);
@@ -458,7 +458,7 @@ module {
     /// assert(e.lookup("bbb") == null);
     /// ```
     /// Runtime: O(log(n))
-    public func lookup(self : EnumerationBlob, key : Blob) : ?Nat {
+    public func lookup(self : BlobEnumeration, key : Blob) : ?Nat {
       let array = self.array;
 
       func get_in_tree(x : Blob, t : Tree) : ?Nat {
@@ -484,13 +484,13 @@ module {
     ///
     /// Example:
     /// ```motoko
-    /// let e = EnumerationBlob.empty();
+    /// let e = BlobEnumeration.empty();
     /// assert(e.add("abc") == 0);
     /// assert(e.containsKey("abc"));
     /// assert(not e.containsKey("bbb"));
     /// ```
     /// Runtime: O(log(n))
-    public func containsKey(self : EnumerationBlob, key : Blob) : Bool {
+    public func containsKey(self : BlobEnumeration, key : Blob) : Bool {
       switch (lookup(self, key)) {
         case (?_) true;
         case null false;
@@ -502,14 +502,14 @@ module {
     ///
     /// Example:
     /// ```motoko
-    /// let e = EnumerationBlob.empty();
+    /// let e = BlobEnumeration.empty();
     /// assert(e.add("abc") == 0);
     /// assert(e.add("aaa") == 1);
     /// assert(e.at(0) == "abc");
     /// assert(e.at(1) == "aaa");
     /// ```
     /// Runtime: O(1)
-    public func at(self : EnumerationBlob, index : Nat) : Blob {
+    public func at(self : BlobEnumeration, index : Nat) : Blob {
       if (index < self.size_) { self.array[index] } else {
         Runtime.trap("Index out of bounds");
       };
@@ -519,7 +519,7 @@ module {
     ///
     /// Example:
     /// ```motoko
-    /// let e = EnumerationBlob.empty();
+    /// let e = BlobEnumeration.empty();
     /// assert(e.add("abc") == 0);
     /// assert(e.add("aaa") == 1);
     /// assert(e.get(0) == ?"abc");
@@ -527,7 +527,7 @@ module {
     /// assert(e.get(2) == null);
     /// ```
     /// Runtime: O(1)
-    public func get(self : EnumerationBlob, index : Nat) : ?Blob {
+    public func get(self : BlobEnumeration, index : Nat) : ?Blob {
       if (index < self.size_) { ?self.array[index] } else {
         null;
       };
@@ -537,39 +537,39 @@ module {
     ///
     /// Example:
     /// ```motoko
-    /// let e = EnumerationBlob.empty();
+    /// let e = BlobEnumeration.empty();
     /// assert(e.add("abc") == 0);
     /// assert(e.add("aaa") == 1);
     /// assert(e.size() == 2);
     /// ```
     /// Runtime: O(1)
-    public func size(self : EnumerationBlob) : Nat = self.size_;
+    public func size(self : BlobEnumeration) : Nat = self.size_;
 
     /// Returns `true` if the enumeration is empty, `false` otherwise.
     ///
     /// Example:
     /// ```motoko
-    /// let e = EnumerationBlob.empty();
+    /// let e = BlobEnumeration.empty();
     /// assert(e.isEmpty());
     /// assert(e.add("abc") == 0);
     /// assert(not e.isEmpty());
     /// ```
     /// Runtime: O(1)
-    public func isEmpty(self : EnumerationBlob) : Bool = self.size_ == 0;
+    public func isEmpty(self : BlobEnumeration) : Bool = self.size_ == 0;
 
     /// Returns the keys in index range `[left, right)` as a lazy iterator,
     /// in the order they were added. Traps if `right > size` or `left > right`.
     ///
     /// Example:
     /// ```motoko
-    /// let e = EnumerationBlob.empty();
+    /// let e = BlobEnumeration.empty();
     /// assert(e.add("abc") == 0);
     /// assert(e.add("aaa") == 1);
     /// assert(e.add("bbb") == 2);
     /// assert(Iter.toArray(e.range(1, 3)) == ["aaa", "bbb"]);
     /// ```
     /// Runtime: O(1) per `next` call.
-    public func range(self : EnumerationBlob, left : Nat, right : Nat) : Iter.Iter<Blob> {
+    public func range(self : BlobEnumeration, left : Nat, right : Nat) : Iter.Iter<Blob> {
       assert left <= right and right <= self.size_;
       let array = self.array;
       var i = left;
@@ -588,14 +588,14 @@ module {
     ///
     /// Example:
     /// ```motoko
-    /// let e = EnumerationBlob.empty();
+    /// let e = BlobEnumeration.empty();
     /// assert(e.add("abc") == 0);
     /// assert(e.add("aaa") == 1);
     /// assert(e.add("bbb") == 2);
     /// assert(e.sliceToArray(0, 2) == ["abc", "aaa"]);
     /// ```
     /// Runtime: O(right - left)
-    public func sliceToArray(self : EnumerationBlob, left : Nat, right : Nat) : [Blob] {
+    public func sliceToArray(self : BlobEnumeration, left : Nat, right : Nat) : [Blob] {
       assert left <= right and right <= self.size_;
       let array = self.array;
       Array.tabulate<Blob>(right - left, func(i) = array[left + i]);

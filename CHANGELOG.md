@@ -7,6 +7,7 @@
 - Removed requirement to provide a sentinel value to the constructor.
 - Made `compare` function argument implicit. 
 - Added new functions `insert`, `containsKey`, `isEmpty`, `range`, and `sliceToArray`.
+- Renamed the `EnumerationBlob` module to `BlobEnumeration`.
 - Added `examples/` project
 - Bumped `core` dependency to `2.5.0`.
 - Set `moc` requirement to `1.0.0`.

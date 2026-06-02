@@ -63,7 +63,7 @@ mops add enumeration
 ```
 
 In the Motoko source file import the module you need. Import either
-`Enumeration` (generic) or `EnumerationBlob` (the optimized `Blob` variant),
+`Enumeration` (generic) or `BlobEnumeration` (the optimized `Blob` variant),
 but not both in the same module — for `Blob` keys their types coincide and the
 method names would be ambiguous:
 
@@ -102,16 +102,16 @@ e.sliceToArray(0, 2); // -> ["abc", "aaa"]
 
 ```
 
-For `Blob` keys, prefer the optimized `EnumerationBlob` module.
+For `Blob` keys, prefer the optimized `BlobEnumeration` module.
 It is functionally equivalent to `Enumeration.empty<Blob>()` used with
 `Blob.compare`, but faster: its red-black tree comparisons use the primitive
 `Prim.blobCompare` instead of `Blob.compare`.
 Its operations also take no `compare` argument:
 
 ```motoko
-import { EnumerationBlob } "mo:enumeration";
+import { BlobEnumeration } "mo:enumeration";
 
-let e = EnumerationBlob.empty();
+let e = BlobEnumeration.empty();
 e.add("abc"); // -> 0
 e.lookup("abc"); // -> ?0
 
@@ -204,7 +204,7 @@ Notes:
 
 - Hits are more expensive in the rb-tree based data structures because the final comparison, if it is a match, has to compare the full 32 bytes.
 - For misses, the rb-tree based data structures are as fast as the hashmaps (v7, v8).
-- For enumeration the optimized module `EnumerationBlob` was used in the benchmark, not the generic module `Enumeration<Blob>`.
+- For enumeration the optimized module `BlobEnumeration` was used in the benchmark, not the generic module `Enumeration<Blob>`.
 
 ## Design
 
@@ -224,9 +224,9 @@ but is a necessary trade-off to achieve memory efficiency.
 
 Shrinking of the array and key deletion in the red-black tree are not implemented because Enumeration does not allow key removal.
 
-The `EnumerationBlob` module is a performance-specialized variant for `Blob` keys.
+The `BlobEnumeration` module is a performance-specialized variant for `Blob` keys.
 It is functionally equivalent to `Enumeration<Blob>` used with `Blob.compare`, but its red-black tree comparisons use the primitive `Prim.blobCompare` rather than `Blob.compare`, which makes it faster.
-This is why the time benchmark above uses `EnumerationBlob` rather than the generic `Enumeration<Blob>`.
+This is why the time benchmark above uses `BlobEnumeration` rather than the generic `Enumeration<Blob>`.
 
 ## Copyright
 

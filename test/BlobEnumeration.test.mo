@@ -1,4 +1,4 @@
-/// Tests for the optimized `EnumerationBlob` module.
+/// Tests for the optimized `BlobEnumeration` module.
 ///
 /// Copyright: 2023 - 2026 MR Research AG
 ///
@@ -6,7 +6,7 @@
 ///
 /// Contributors: Timo Hanke (timohanke), Yurii Pytomets (Pitometsu)
 
-import { EnumerationBlob } "../src";
+import { BlobEnumeration } "../src";
 import RNG "RNG";
 import Array "mo:core/Array";
 import Blob "mo:core/Blob";
@@ -20,12 +20,12 @@ let blobs = Array.tabulate<Blob>(n, func(i) = r.blob());
 var i = 0;
 
 suite(
-  "EnumerationBlob",
+  "BlobEnumeration",
   func() {
     test(
       "Blob",
       func() {
-        let b = EnumerationBlob.empty();
+        let b = BlobEnumeration.empty();
         assert (b.size() == 0);
         i := 0;
         while (i < n) {
@@ -64,7 +64,7 @@ suite(
     test(
       "insert / containsKey / isEmpty",
       func() {
-        let e = EnumerationBlob.empty();
+        let e = BlobEnumeration.empty();
         assert (e.isEmpty());
         assert (e.insert("abc") == (true, 0));
         assert (not e.isEmpty());
@@ -80,7 +80,7 @@ suite(
     test(
       "range / sliceToArray",
       func() {
-        let e = EnumerationBlob.empty();
+        let e = BlobEnumeration.empty();
         ignore e.add("abc");
         ignore e.add("aaa");
         ignore e.add("bbb");
