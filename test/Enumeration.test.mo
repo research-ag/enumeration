@@ -1,4 +1,4 @@
-/// Tests for the `Enumeration` package.
+/// Tests for the generic `Enumeration` module.
 ///
 /// Copyright: 2023 - 2026 MR Research AG
 ///
@@ -6,45 +6,18 @@
 ///
 /// Contributors: Timo Hanke (timohanke), Yurii Pytomets (Pitometsu)
 
-import { Enumeration; EnumerationBlob } "../src";
+import { Enumeration } "../src";
+import RNG "RNG";
 import Array "mo:core/Array";
-import Blob "mo:core/Blob";
+import Iter "mo:core/Iter";
 import Principal "mo:core/Principal";
 import Text "mo:core/Text";
-import Nat8 "mo:core/Nat8";
 import { test; suite } "mo:test";
 
-class RNG() {
-  var seed = 234234;
-
-  public func next() : Nat {
-    seed += 1;
-    let a = seed * 15485863;
-    a * a * a % 2038074743;
-  };
-
-  public func blob() : Blob {
-    let a = Array.tabulate<Nat8>(29, func(i) = Nat8.fromNat(next() % 256));
-    Blob.fromArray(a);
-  };
-
-  public func maxBlob() : Blob {
-    let a = Array.tabulate<Nat8>(29, func(i) = Nat8.fromNat(0));
-    Blob.fromArray(a);
-  };
-
-  public func principal() : Principal = Principal.fromBlob(blob());
-  public func maxPrincipal() : Principal = Principal.fromBlob(maxBlob());
-  public func text() : Text = Principal.toText(Principal.fromBlob(blob()));
-  public func maxText() : Text = Principal.toText(Principal.fromBlob(maxBlob()));
-};
-
 let n = 100;
-let r = RNG();
-let b = EnumerationBlob.empty();
-let p = Enumeration.empty<Principal>(Principal.fromBlob "");
-let t = Enumeration.empty<Text>("");
-let blobs = Array.tabulate<Blob>(n, func(i) = r.blob());
+let r = RNG.RNG();
+let p = Enumeration.empty<Principal>();
+let t = Enumeration.empty<Text>();
 let principals = Array.tabulate<Principal>(n, func(i) = r.principal());
 let texts = Array.tabulate<Text>(n, func(i) = r.text());
 
@@ -53,44 +26,6 @@ var i = 0;
 suite(
   "Enumeration",
   func() {
-    test(
-      "Blob",
-      func() {
-        assert (b.size() == 0);
-        i := 0;
-        while (i < n) {
-          assert (b.add(blobs[i]) == i);
-          assert (b.size() == i + 1);
-          i += 1;
-        };
-
-        i := 0;
-        while (i < n) {
-          assert (b.add(blobs[i]) == i);
-          assert (b.size() == n);
-          i += 1;
-        };
-
-        i := 0;
-        while (i < n) {
-          assert (b.lookup(blobs[i]) == ?i);
-          i += 1;
-        };
-
-        i := 0;
-        while (i < n) {
-          assert (b.lookup(r.blob()) == null);
-          i += 1;
-        };
-
-        i := 0;
-        while (i < n) {
-          assert (b.at(i) == blobs[i]);
-          i += 1;
-        };
-      },
-    );
-
     test(
       "Principal",
       func() {
@@ -164,6 +99,38 @@ suite(
           assert (t.at(i) == texts[i]);
           i += 1;
         };
+      },
+    );
+
+    test(
+      "insert / containsKey / isEmpty",
+      func() {
+        let e = Enumeration.empty<Text>();
+        assert (e.isEmpty());
+        assert (e.insert("abc") == (true, 0));
+        assert (not e.isEmpty());
+        assert (e.insert("aaa") == (true, 1));
+        assert (e.insert("abc") == (false, 0));
+        assert (e.size() == 2);
+        assert (e.containsKey("abc"));
+        assert (e.containsKey("aaa"));
+        assert (not e.containsKey("bbb"));
+      },
+    );
+
+    test(
+      "range / sliceToArray",
+      func() {
+        let e = Enumeration.empty<Text>();
+        ignore e.add("abc");
+        ignore e.add("aaa");
+        ignore e.add("bbb");
+        assert (e.sliceToArray(0, 3) == ["abc", "aaa", "bbb"]);
+        assert (e.sliceToArray(1, 3) == ["aaa", "bbb"]);
+        assert (e.sliceToArray(2, 2) == []);
+        assert (Iter.toArray(e.range(0, 3)) == ["abc", "aaa", "bbb"]);
+        assert (Iter.toArray(e.range(1, 2)) == ["aaa"]);
+        assert (Iter.toArray(e.range(3, 3)) == []);
       },
     );
   },

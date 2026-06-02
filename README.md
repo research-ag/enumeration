@@ -62,7 +62,10 @@ You need `mops` installed. In your project directory run:
 mops add enumeration
 ```
 
-In the Motoko source file import the package as:
+In the Motoko source file import the module you need. Import either
+`Enumeration` (generic) or `EnumerationBlob` (the optimized `Blob` variant),
+but not both in the same module — for `Blob` keys their types coincide and the
+method names would be ambiguous:
 
 ```motoko
 import { Enumeration } "mo:enumeration";
@@ -78,12 +81,13 @@ from the key type as long as that type's module (here `mo:core/Text`) is importe
 import { Enumeration } "mo:enumeration";
 import Text "mo:core/Text";
 
-let e = Enumeration.empty<Text>("");
+let e = Enumeration.empty<Text>();
 e.add("abc"); // -> 0
 e.add("aaa"); // -> 1
 e.add("abc"); // -> 0
 
 e.lookup("aaa"); // -> ?1
+e.containsKey("aaa"); // -> true
 
 e.get(0); // -> ?"abc"
 e.get(1); // -> ?"aaa"
@@ -93,10 +97,16 @@ e.at(0); // -> "abc"
 e.at(1); // -> "aaa"
 e.at(2); // -> trap "Index out of bounds"
 
+e.size(); // -> 2
+e.sliceToArray(0, 2); // -> ["abc", "aaa"]
+
 ```
 
-For `Blob` keys use the optimized `EnumerationBlob` module, whose operations
-take no `compare` argument:
+For `Blob` keys, prefer the optimized `EnumerationBlob` module.
+It is functionally equivalent to `Enumeration.empty<Blob>()` used with
+`Blob.compare`, but faster: its red-black tree comparisons use the primitive
+`Prim.blobCompare` instead of `Blob.compare`.
+Its operations also take no `compare` argument:
 
 ```motoko
 import { EnumerationBlob } "mo:enumeration";
@@ -196,6 +206,10 @@ This makes lookups by key slightly slower than in the RBTree from motoko-base
 but is a necessary trade-off to achieve memory efficiency.
 
 Shrinking of the array and key deletion in the red-black tree are not implemented because Enumeration does not allow key removal.
+
+The `EnumerationBlob` module is a performance-specialized variant for `Blob` keys.
+It is functionally equivalent to `Enumeration<Blob>` used with `Blob.compare`, but its red-black tree comparisons use the primitive `Prim.blobCompare` rather than `Blob.compare`, which makes it faster.
+This is why the time benchmark above uses `EnumerationBlob` rather than the generic `Enumeration<Blob>`.
 
 ## Copyright
 

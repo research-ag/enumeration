@@ -18,7 +18,9 @@
 /// Main author: Andrii Stepanov (AStepanov25)
 /// Contributors: Timo Hanke (timohanke), Yurii Pytomets (Pitometsu)
 
+import Array "mo:core/Array";
 import Blob "mo:core/Blob";
+import Iter "mo:core/Iter";
 import Nat32 "mo:core/Nat32";
 import Order "mo:core/Order";
 import Prim "mo:⛔";
@@ -29,7 +31,7 @@ module {
   /// Red-black tree of key `Nat`.
   public type Tree = ?({ #R; #B }, Tree, Nat, Tree);
 
-  /// Common functions between both classes
+  /// Common functions between both modules
   func lbalance(left : Tree, y : Nat, right : Tree) : Tree {
     switch (left, right) {
       case (?(#R, ?(#R, l1, y1, r1), y2, r2), r) ?(#R, ?(#B, l1, y1, r1), y2, ?(#B, r2, y, r));
@@ -63,47 +65,54 @@ module {
   ///
   /// Example:
   /// ```motoko
-  /// let e = Enumeration.empty<Text>("");
+  /// let e = Enumeration.empty<Text>();
   /// ```
   public module Enumeration {
     public type Enumeration<K> = {
       var array : [var K];
       var size_ : Nat;
       var tree : Tree;
-      empty : K;
     };
 
-    public func empty<K>(empty : K) : Enumeration<K> {
-      {
-        var array = [var empty];
-        var size_ = 0;
-        var tree = (null : Tree);
-        empty;
-      };
-    };
-
-    /// Add `key` to enumeration. Returns `size` if the key is new to the enumeration and index of key in enumeration otherwise.
+    /// Creates a new empty enumeration.
     ///
     /// Example:
     /// ```motoko
-    /// let e = Enumeration.empty<Text>("");
-    /// assert(e.add("abc") == 0);
-    /// assert(e.add("aaa") == 1);
-    /// assert(e.add("abc") == 0);
+    /// let e = Enumeration.empty<Text>();
+    /// ```
+    public func empty<K>() : Enumeration<K> {
+      {
+        var array = [var] : [var K];
+        var size_ = 0;
+        var tree = (null : Tree);
+      };
+    };
+
+    /// Add `key` to the enumeration and return `(isNew, index)`, where `isNew`
+    /// is `true` if the key was not present before (and has now been appended
+    /// at a new `index`), or `false` if it was already present (and `index` is
+    /// its existing index). The key is never stored twice.
+    ///
+    /// Example:
+    /// ```motoko
+    /// let e = Enumeration.empty<Text>();
+    /// assert(e.insert("abc") == (true, 0));
+    /// assert(e.insert("aaa") == (true, 1));
+    /// assert(e.insert("abc") == (false, 0));
     /// ```
     /// Runtime: O(log(n))
-    public func add<K>(self : Enumeration<K>, key : K, compare : (implicit : (K, K) -> Order.Order)) : Nat {
+    public func insert<K>(self : Enumeration<K>, compare : (implicit : (K, K) -> Order.Order), key : K) : (Bool, Nat) {
       let array = self.array;
       let size = self.size_;
 
       var index = size;
 
-      func insert(tree : Tree) : Tree {
+      func ins(tree : Tree) : Tree {
         switch tree {
           case (?(#B, left, y, right)) {
             switch (compare(key, array[y])) {
-              case (#less) lbalance(insert(left), y, right);
-              case (#greater) rbalance(left, y, insert(right));
+              case (#less) lbalance(ins(left), y, right);
+              case (#greater) rbalance(left, y, ins(right));
               case (#equal) {
                 index := y;
                 tree;
@@ -112,8 +121,8 @@ module {
           };
           case (?(#R, left, y, right)) {
             switch (compare(key, array[y])) {
-              case (#less) ?(#R, insert(left), y, right);
-              case (#greater) ?(#R, left, y, insert(right));
+              case (#less) ?(#R, ins(left), y, right);
+              case (#greater) ?(#R, left, y, ins(right));
               case (#equal) {
                 index := y;
                 tree;
@@ -127,27 +136,44 @@ module {
         };
       };
 
-      self.tree := switch (insert(self.tree)) {
+      self.tree := switch (ins(self.tree)) {
         case (?(#R, left, y, right)) ?(#B, left, y, right);
         case other other;
       };
 
       if (index == size) {
         if (size == array.size()) {
-          self.array := VarArray.tabulate<K>(next_size(size), func(i) = if (i < size) { array[i] } else { self.empty });
+          // Reserve slots need to hold some valid `K`; they are never read
+          // (`at`/`get` are bounds-checked against `size_`). We reuse the first
+          // stored key `array[0]`, except on the very first insertion when no
+          // element exists yet, where we use `key` itself.
+          let filler = if (size == 0) key else array[0];
+          self.array := VarArray.tabulate<K>(if (size == 0) 1 else next_size(size), func(i) = if (i < size) { array[i] } else { filler });
         };
         self.array[index] := key;
         self.size_ += 1;
       };
 
-      index;
+      (index == size, index);
     };
+
+    /// Add `key` to enumeration. Returns `size` if the key is new to the enumeration and index of key in enumeration otherwise.
+    ///
+    /// Example:
+    /// ```motoko
+    /// let e = Enumeration.empty<Text>();
+    /// assert(e.add("abc") == 0);
+    /// assert(e.add("aaa") == 1);
+    /// assert(e.add("abc") == 0);
+    /// ```
+    /// Runtime: O(log(n))
+    public func add<K>(self : Enumeration<K>, compare : (implicit : (K, K) -> Order.Order), key : K) : Nat = insert(self, compare, key).1;
 
     /// Returns `?index` where `index` is the index of `key` in order it was added to enumeration, or `null` if `key` wasn't added.
     ///
     /// Example:
     /// ```motoko
-    /// let e = Enumeration.empty<Text>("");
+    /// let e = Enumeration.empty<Text>();
     /// assert(e.add("abc") == 0);
     /// assert(e.add("aaa") == 1);
     /// assert(e.lookup("abc") == ?0);
@@ -155,7 +181,7 @@ module {
     /// assert(e.lookup("bbb") == null);
     /// ```
     /// Runtime: O(log(n))
-    public func lookup<K>(self : Enumeration<K>, key : K, compare : (implicit : (K, K) -> Order.Order)) : ?Nat {
+    public func lookup<K>(self : Enumeration<K>, compare : (implicit : (K, K) -> Order.Order), key : K) : ?Nat {
       let array = self.array;
 
       func get_in_tree(x : K, t : Tree) : ?Nat {
@@ -174,12 +200,29 @@ module {
       get_in_tree(key, self.tree);
     };
 
+    /// Returns `true` if `key` is present in the enumeration, `false` otherwise.
+    ///
+    /// Example:
+    /// ```motoko
+    /// let e = Enumeration.empty<Text>();
+    /// assert(e.add("abc") == 0);
+    /// assert(e.containsKey("abc"));
+    /// assert(not e.containsKey("bbb"));
+    /// ```
+    /// Runtime: O(log(n))
+    public func containsKey<K>(self : Enumeration<K>, compare : (implicit : (K, K) -> Order.Order), key : K) : Bool {
+      switch (lookup(self, compare, key)) {
+        case (?_) true;
+        case null false;
+      };
+    };
+
     /// Returns `K` with index `index`.
     /// Traps if `index >= size`.
     ///
     /// Example:
     /// ```motoko
-    /// let e = Enumeration.empty<Text>("");
+    /// let e = Enumeration.empty<Text>();
     /// assert(e.add("abc") == 0);
     /// assert(e.add("aaa") == 1);
     /// assert(e.at(0) == "abc");
@@ -197,7 +240,7 @@ module {
     ///
     /// Example:
     /// ```motoko
-    /// let e = Enumeration.empty<Text>("");
+    /// let e = Enumeration.empty<Text>();
     /// assert(e.add("abc") == 0);
     /// assert(e.add("aaa") == 1);
     /// assert(e.get(0) == ?"abc");
@@ -215,16 +258,77 @@ module {
     ///
     /// Example:
     /// ```motoko
-    /// let e = Enumeration.empty<Text>("");
+    /// let e = Enumeration.empty<Text>();
     /// assert(e.add("abc") == 0);
     /// assert(e.add("aaa") == 1);
     /// assert(e.size() == 2);
     /// ```
     /// Runtime: O(1)
     public func size<K>(self : Enumeration<K>) : Nat = self.size_;
+
+    /// Returns `true` if the enumeration is empty, `false` otherwise.
+    ///
+    /// Example:
+    /// ```motoko
+    /// let e = Enumeration.empty<Text>();
+    /// assert(e.isEmpty());
+    /// assert(e.add("abc") == 0);
+    /// assert(not e.isEmpty());
+    /// ```
+    /// Runtime: O(1)
+    public func isEmpty<K>(self : Enumeration<K>) : Bool = self.size_ == 0;
+
+    /// Returns the keys in index range `[left, right)` as a lazy iterator,
+    /// in the order they were added. Traps if `right > size` or `left > right`.
+    ///
+    /// Example:
+    /// ```motoko
+    /// let e = Enumeration.empty<Text>();
+    /// assert(e.add("abc") == 0);
+    /// assert(e.add("aaa") == 1);
+    /// assert(e.add("bbb") == 2);
+    /// assert(Iter.toArray(e.range(1, 3)) == ["aaa", "bbb"]);
+    /// ```
+    /// Runtime: O(1) per `next` call.
+    public func range<K>(self : Enumeration<K>, left : Nat, right : Nat) : Iter.Iter<K> {
+      assert left <= right and right <= self.size_;
+      let array = self.array;
+      var i = left;
+      {
+        next = func() : ?K {
+          if (i >= right) return null;
+          let x = array[i];
+          i += 1;
+          ?x;
+        };
+      };
+    };
+
+    /// Returns the keys in index range `[left, right)` as an array, in the
+    /// order they were added. Traps if `right > size` or `left > right`.
+    ///
+    /// Example:
+    /// ```motoko
+    /// let e = Enumeration.empty<Text>();
+    /// assert(e.add("abc") == 0);
+    /// assert(e.add("aaa") == 1);
+    /// assert(e.add("bbb") == 2);
+    /// assert(e.sliceToArray(0, 2) == ["abc", "aaa"]);
+    /// ```
+    /// Runtime: O(right - left)
+    public func sliceToArray<K>(self : Enumeration<K>, left : Nat, right : Nat) : [K] {
+      assert left <= right and right <= self.size_;
+      let array = self.array;
+      Array.tabulate<K>(right - left, func(i) = array[left + i]);
+    };
   };
 
-  /// An optimized version of Enumeration<Blob>
+  /// A performance-optimized version of `Enumeration<Blob>`.
+  ///
+  /// It is functionally equivalent to `Enumeration.empty<Blob>()` used with
+  /// `Blob.compare`, but faster: the red-black tree comparisons use the
+  /// primitive `Prim.blobCompare` instead of `Blob.compare`. Prefer this
+  /// module whenever the keys are `Blob`s.
   public module EnumerationBlob {
     public type EnumerationBlob = {
       var array : [var Blob];
@@ -232,6 +336,12 @@ module {
       var tree : Tree;
     };
 
+    /// Creates a new empty enumeration.
+    ///
+    /// Example:
+    /// ```motoko
+    /// let e = EnumerationBlob.empty();
+    /// ```
     public func empty() : EnumerationBlob {
       {
         var array = [var ""];
@@ -240,30 +350,33 @@ module {
       };
     };
 
-    /// Add `key` to enumeration. Returns `size` if the key is new to the enumeration and index of key in enumeration otherwise.
+    /// Add `key` to the enumeration and return `(isNew, index)`, where `isNew`
+    /// is `true` if the key was not present before (and has now been appended
+    /// at a new `index`), or `false` if it was already present (and `index` is
+    /// its existing index). The key is never stored twice.
     ///
     /// Example:
     /// ```motoko
     /// let e = EnumerationBlob.empty();
-    /// assert(e.add("abc") == 0);
-    /// assert(e.add("aaa") == 1);
-    /// assert(e.add("abc") == 0);
+    /// assert(e.insert("abc") == (true, 0));
+    /// assert(e.insert("aaa") == (true, 1));
+    /// assert(e.insert("abc") == (false, 0));
     /// ```
     /// Runtime: O(log(n))
-    public func add(self : EnumerationBlob, key : Blob) : Nat {
+    public func insert(self : EnumerationBlob, key : Blob) : (Bool, Nat) {
       let array = self.array;
       let size = self.size_;
 
       var index = size;
 
-      func insert(tree : Tree) : Tree {
+      func ins(tree : Tree) : Tree {
         switch tree {
           case (?(#B, left, y, right)) {
             let res = Prim.blobCompare(key, array[y]);
             if (res < 0) {
-              lbalance(insert(left), y, right);
+              lbalance(ins(left), y, right);
             } else if (res > 0) {
-              rbalance(left, y, insert(right));
+              rbalance(left, y, ins(right));
             } else {
               index := y;
               tree;
@@ -272,9 +385,9 @@ module {
           case (?(#R, left, y, right)) {
             let res = Prim.blobCompare(key, array[y]);
             if (res < 0) {
-              ?(#R, insert(left), y, right);
+              ?(#R, ins(left), y, right);
             } else if (res > 0) {
-              ?(#R, left, y, insert(right));
+              ?(#R, left, y, ins(right));
             } else {
               index := y;
               tree;
@@ -287,7 +400,7 @@ module {
         };
       };
 
-      self.tree := switch (insert(self.tree)) {
+      self.tree := switch (ins(self.tree)) {
         case (?(#R, left, y, right)) ?(#B, left, y, right);
         case other other;
       };
@@ -300,8 +413,20 @@ module {
         self.size_ += 1;
       };
 
-      index;
+      (index == size, index);
     };
+
+    /// Add `key` to enumeration. Returns `size` if the key is new to the enumeration and index of key in enumeration otherwise.
+    ///
+    /// Example:
+    /// ```motoko
+    /// let e = EnumerationBlob.empty();
+    /// assert(e.add("abc") == 0);
+    /// assert(e.add("aaa") == 1);
+    /// assert(e.add("abc") == 0);
+    /// ```
+    /// Runtime: O(log(n))
+    public func add(self : EnumerationBlob, key : Blob) : Nat = insert(self, key).1;
 
     /// Returns `?index` where `index` is the index of `key` in order it was added to enumeration, or `null` if `key` wasn't added.
     ///
@@ -335,6 +460,23 @@ module {
       };
 
       get_in_tree(key, self.tree);
+    };
+
+    /// Returns `true` if `key` is present in the enumeration, `false` otherwise.
+    ///
+    /// Example:
+    /// ```motoko
+    /// let e = EnumerationBlob.empty();
+    /// assert(e.add("abc") == 0);
+    /// assert(e.containsKey("abc"));
+    /// assert(not e.containsKey("bbb"));
+    /// ```
+    /// Runtime: O(log(n))
+    public func containsKey(self : EnumerationBlob, key : Blob) : Bool {
+      switch (lookup(self, key)) {
+        case (?_) true;
+        case null false;
+      };
     };
 
     /// Returns `K` with index `index`.
@@ -385,5 +527,61 @@ module {
     /// ```
     /// Runtime: O(1)
     public func size(self : EnumerationBlob) : Nat = self.size_;
+
+    /// Returns `true` if the enumeration is empty, `false` otherwise.
+    ///
+    /// Example:
+    /// ```motoko
+    /// let e = EnumerationBlob.empty();
+    /// assert(e.isEmpty());
+    /// assert(e.add("abc") == 0);
+    /// assert(not e.isEmpty());
+    /// ```
+    /// Runtime: O(1)
+    public func isEmpty(self : EnumerationBlob) : Bool = self.size_ == 0;
+
+    /// Returns the keys in index range `[left, right)` as a lazy iterator,
+    /// in the order they were added. Traps if `right > size` or `left > right`.
+    ///
+    /// Example:
+    /// ```motoko
+    /// let e = EnumerationBlob.empty();
+    /// assert(e.add("abc") == 0);
+    /// assert(e.add("aaa") == 1);
+    /// assert(e.add("bbb") == 2);
+    /// assert(Iter.toArray(e.range(1, 3)) == ["aaa", "bbb"]);
+    /// ```
+    /// Runtime: O(1) per `next` call.
+    public func range(self : EnumerationBlob, left : Nat, right : Nat) : Iter.Iter<Blob> {
+      assert left <= right and right <= self.size_;
+      let array = self.array;
+      var i = left;
+      {
+        next = func() : ?Blob {
+          if (i >= right) return null;
+          let x = array[i];
+          i += 1;
+          ?x;
+        };
+      };
+    };
+
+    /// Returns the keys in index range `[left, right)` as an array, in the
+    /// order they were added. Traps if `right > size` or `left > right`.
+    ///
+    /// Example:
+    /// ```motoko
+    /// let e = EnumerationBlob.empty();
+    /// assert(e.add("abc") == 0);
+    /// assert(e.add("aaa") == 1);
+    /// assert(e.add("bbb") == 2);
+    /// assert(e.sliceToArray(0, 2) == ["abc", "aaa"]);
+    /// ```
+    /// Runtime: O(right - left)
+    public func sliceToArray(self : EnumerationBlob, left : Nat, right : Nat) : [Blob] {
+      assert left <= right and right <= self.size_;
+      let array = self.array;
+      Array.tabulate<Blob>(right - left, func(i) = array[left + i]);
+    };
   };
 };

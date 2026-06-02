@@ -1,11 +1,17 @@
 # Enumeration changelog
 
-## 0.1.4
+## 0.2.0
 
 ### Changed
 
 - Updated `core` from `2.0.0` to `2.5.0`.
 - Converted API from class-based to static module (record type). `Enumeration` and `EnumerationBlob` are now directly stable.
+- The implicit `compare` argument now comes second (right after `self`) in `Enumeration.add` and `Enumeration.lookup`, for consistency with `mo:core/Map` and `mo:core/List`.
+- `Enumeration.empty` no longer takes a sentinel argument; it is now `empty<K>()`, matching `mo:core/List.empty`.
+
+### Added
+
+- `insert` (returns `(isNew, index)`), `containsKey`, `isEmpty`, `range`, and `sliceToArray` to both `Enumeration` and `EnumerationBlob`.
 
 ## 0.1.3
 
