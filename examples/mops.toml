@@ -6,4 +6,4 @@ core = "2.5.0"
 enumeration = "../"
 
 [toolchain]
-moc = "1.4.0"
+moc = "1.6.0"
