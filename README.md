@@ -41,7 +41,7 @@ Canister services often track their users by principal.
 Per-user data is then stored in a tree or hashmap where the key is the principal and the value is the user data.
 
 The motivation of this data structure is to enumerate the users in the order that they were registered.
-This result in a permanent user number for each user.
+This results in a permanent user number for each user.
 Instead of a tree, the user data can then be stored in a linear structure such as Buffer or [Vector](https://mops.one/vector) which has `O(1)` access.
 
 To this end, the present data structure provides an "enumerated set" of keys where the key type `K` is a type parameter (e.g. `Principal`).
@@ -71,13 +71,19 @@ import { Enumeration } "mo:enumeration";
 
 ### Example
 
-```motoko
-let e = Enumeration.empty<Blob>("");
-e.add("abc", Blob.compare); // -> 0
-e.add("aaa", Blob.compare); // -> 1
-e.add("abc", Blob.compare); // -> 0
+The `compare` function is an implicit argument: it is resolved automatically
+from the key type as long as that type's module (here `mo:core/Text`) is imported.
 
-e.lookup("aaa", Blob.compare); // -> ?1
+```motoko
+import { Enumeration } "mo:enumeration";
+import Text "mo:core/Text";
+
+let e = Enumeration.empty<Text>("");
+e.add("abc"); // -> 0
+e.add("aaa"); // -> 1
+e.add("abc"); // -> 0
+
+e.lookup("aaa"); // -> ?1
 
 e.get(0); // -> ?"abc"
 e.get(1); // -> ?"aaa"
@@ -86,6 +92,18 @@ e.get(2); // -> null
 e.at(0); // -> "abc"
 e.at(1); // -> "aaa"
 e.at(2); // -> trap "Index out of bounds"
+
+```
+
+For `Blob` keys use the optimized `EnumerationBlob` module, whose operations
+take no `compare` argument:
+
+```motoko
+import { EnumerationBlob } "mo:enumeration";
+
+let e = EnumerationBlob.empty();
+e.add("abc"); // -> 0
+e.lookup("abc"); // -> ?0
 
 ```
 
@@ -114,7 +132,9 @@ Benchmarking code can be found here: [canister-profiling](https://github.com/res
 
 We compare `Enumeration<K>` against various other maps of type `K -> Nat`. The functionality of these other maps is not exactly the same but sufficiently overlaps with Enumeration that a comparison is possible. It should be noted that the other maps do not have the inverse map `Nat -> K` like Enumeration does. On the other hand, they offer deletion which Enumeration does not. However, the map `K -> Nat` is tree-based in all cases hence we can compare insertion and lookup operations both in terms of instructions and memory used.
 
-The results below have been obtained with `moc 0.9.2`.
+The results below have been obtained with `moc 0.9.2` (and `map` v7/v8); they
+are historical and should be read as indicative orders of magnitude rather than
+exact figures for current compiler versions.
 
 ### Memory
 

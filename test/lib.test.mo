@@ -1,6 +1,6 @@
-/// ...
+/// Tests for the `Enumeration` package.
 ///
-/// Copyright: 2023 - 2025 MR Research AG
+/// Copyright: 2023 - 2026 MR Research AG
 ///
 /// Main author: Andrii Stepanov (AStepanov25)
 ///

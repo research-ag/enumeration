@@ -1,6 +1,6 @@
 /// `Enumeration<K>` is a "set enumeration" of elements of type `K` called "keys".
 ///
-/// A typical application is to assign permanent user numbers to princpals.
+/// A typical application is to assign permanent user numbers to principals.
 ///
 /// The data structure is a map `Nat -> K` with the following properties:
 /// * keys are not repeated, i.e. the map is injective
@@ -63,7 +63,7 @@ module {
   ///
   /// Example:
   /// ```motoko
-  /// let e = Enumeration.empty<Blob>("");
+  /// let e = Enumeration.empty<Text>("");
   /// ```
   public module Enumeration {
     public type Enumeration<K> = {
@@ -86,10 +86,10 @@ module {
     ///
     /// Example:
     /// ```motoko
-    /// let e = Enumeration.empty<Blob>("");
-    /// assert(e.add("abc", Blob.compare) == 0);
-    /// assert(e.add("aaa", Blob.compare) == 1);
-    /// assert(e.add("abc", Blob.compare) == 0);
+    /// let e = Enumeration.empty<Text>("");
+    /// assert(e.add("abc") == 0);
+    /// assert(e.add("aaa") == 1);
+    /// assert(e.add("abc") == 0);
     /// ```
     /// Runtime: O(log(n))
     public func add<K>(self : Enumeration<K>, key : K, compare : (implicit : (K, K) -> Order.Order)) : Nat {
@@ -136,23 +136,23 @@ module {
         if (size == array.size()) {
           self.array := VarArray.tabulate<K>(next_size(size), func(i) = if (i < size) { array[i] } else { self.empty });
         };
-        self.array[size] := key;
+        self.array[index] := key;
         self.size_ += 1;
       };
 
       index;
     };
 
-    /// Returns `?index` where `index` is the index of `key` in order it was added to enumeration, or `null` it `key` wasn't added.
+    /// Returns `?index` where `index` is the index of `key` in order it was added to enumeration, or `null` if `key` wasn't added.
     ///
     /// Example:
     /// ```motoko
-    /// let e = Enumeration.empty<Blob>("");
-    /// assert(e.add("abc", Blob.compare) == 0);
-    /// assert(e.add("aaa", Blob.compare) == 1);
-    /// assert(e.lookup("abc", Blob.compare) == ?0);
-    /// assert(e.lookup("aaa", Blob.compare) == ?1);
-    /// assert(e.lookup("bbb", Blob.compare) == null);
+    /// let e = Enumeration.empty<Text>("");
+    /// assert(e.add("abc") == 0);
+    /// assert(e.add("aaa") == 1);
+    /// assert(e.lookup("abc") == ?0);
+    /// assert(e.lookup("aaa") == ?1);
+    /// assert(e.lookup("bbb") == null);
     /// ```
     /// Runtime: O(log(n))
     public func lookup<K>(self : Enumeration<K>, key : K, compare : (implicit : (K, K) -> Order.Order)) : ?Nat {
@@ -179,9 +179,9 @@ module {
     ///
     /// Example:
     /// ```motoko
-    /// let e = Enumeration.empty<Blob>("");
-    /// assert(e.add("abc", Blob.compare) == 0);
-    /// assert(e.add("aaa", Blob.compare) == 1);
+    /// let e = Enumeration.empty<Text>("");
+    /// assert(e.add("abc") == 0);
+    /// assert(e.add("aaa") == 1);
     /// assert(e.at(0) == "abc");
     /// assert(e.at(1) == "aaa");
     /// ```
@@ -197,9 +197,9 @@ module {
     ///
     /// Example:
     /// ```motoko
-    /// let e = Enumeration.empty<Blob>("");
-    /// assert(e.add("abc", Blob.compare) == 0);
-    /// assert(e.add("aaa", Blob.compare) == 1);
+    /// let e = Enumeration.empty<Text>("");
+    /// assert(e.add("abc") == 0);
+    /// assert(e.add("aaa") == 1);
     /// assert(e.get(0) == ?"abc");
     /// assert(e.get(1) == ?"aaa");
     /// assert(e.get(2) == null);
@@ -215,9 +215,9 @@ module {
     ///
     /// Example:
     /// ```motoko
-    /// let e = Enumeration.empty<Blob>("");
-    /// assert(e.add("abc", Blob.compare) == 0);
-    /// assert(e.add("aaa", Blob.compare) == 1);
+    /// let e = Enumeration.empty<Text>("");
+    /// assert(e.add("abc") == 0);
+    /// assert(e.add("aaa") == 1);
     /// assert(e.size() == 2);
     /// ```
     /// Runtime: O(1)
@@ -294,16 +294,16 @@ module {
 
       if (index == size) {
         if (size == array.size()) {
-          self.array := VarArray.tabulate<Blob>(next_size(size), func(i) = if (i < self.size_) { array[i] } else { "" });
+          self.array := VarArray.tabulate<Blob>(next_size(size), func(i) = if (i < size) { array[i] } else { "" });
         };
-        self.array[size] := key;
+        self.array[index] := key;
         self.size_ += 1;
       };
 
       index;
     };
 
-    /// Returns `?index` where `index` is the index of `key` in order it was added to enumeration, or `null` it `key` wasn't added.
+    /// Returns `?index` where `index` is the index of `key` in order it was added to enumeration, or `null` if `key` wasn't added.
     ///
     /// Example:
     /// ```motoko
@@ -338,7 +338,7 @@ module {
     };
 
     /// Returns `K` with index `index`.
-    /// Traps it `index >= size`.
+    /// Traps if `index >= size`.
     ///
     /// Example:
     /// ```motoko

@@ -13,7 +13,7 @@ test = "2.1.2"
 core = "2.5.0"
 
 [requirements]
-moc = "1.4.0"
+moc = "1.0.0"
 
 [toolchain]
 moc = "1.8.2"
