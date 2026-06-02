@@ -28,10 +28,15 @@ import Runtime "mo:core/Runtime";
 import VarArray "mo:core/VarArray";
 
 module {
-  /// Red-black tree of key `Nat`.
+  /// A red-black tree node. The `Nat` payload is not a key but an *index* into
+  /// the key array; comparisons during tree operations dereference the array.
+  /// `null` is the empty tree (also used for leaves).
   public type Tree = ?({ #R; #B }, Tree, Nat, Tree);
 
-  /// Common functions between both modules
+  // ── Red-black tree / array-growth helpers shared by both modules ──
+
+  // Rebalances a subtree after an insertion into its left child
+  // (standard Okasaki red-black tree balancing).
   func lbalance(left : Tree, y : Nat, right : Tree) : Tree {
     switch (left, right) {
       case (?(#R, ?(#R, l1, y1, r1), y2, r2), r) ?(#R, ?(#B, l1, y1, r1), y2, ?(#B, r2, y, r));
@@ -40,6 +45,7 @@ module {
     };
   };
 
+  // Rebalances a subtree after an insertion into its right child (mirror of `lbalance`).
   func rbalance(left : Tree, y : Nat, right : Tree) : Tree {
     switch (left, right) {
       case (l, ?(#R, l1, y1, ?(#R, l2, y2, r2))) ?(#R, ?(#B, l, y, l1), y1, ?(#B, l2, y2, r2));
@@ -48,8 +54,9 @@ module {
     };
   };
 
-  // approximate growth by sqrt(2) by 2-powers
-  // the function will trap if n == 0 or n >= 3 * 2 ** 30
+  // Returns the next array capacity, growing the current size `n_` by a factor
+  // of roughly sqrt(2) and rounding to a multiple of a power of two.
+  // Traps if n_ == 0 or n_ >= 3 * 2 ** 30 (see inline assertions below).
   func next_size(n_ : Nat) : Nat {
     if (n_ == 1) return 2;
     let n = Nat32.fromNat(n_); // traps if n >= 2 ** 32
@@ -59,27 +66,31 @@ module {
     Nat32.toNat(m);
   };
 
-  /// Bidirectional enumeration of any `K` s in the order they are added.
-  /// For a map from `K` to index `Nat` it is implemented as red-black tree,
-  /// for a map from index `Nat` to `K` the implementation is an array.
+  /// Bidirectional enumeration of keys of type `K` in the order they are added.
+  /// The map from `K` to index `Nat` is implemented as a red-black tree;
+  /// the map from index `Nat` to `K` is implemented as an array.
   ///
   /// Example:
   /// ```motoko
   /// let e = Enumeration.empty<Text>();
   /// ```
   public module Enumeration {
+    /// The enumeration state. It consists only of stable types, so a value can
+    /// be stored directly in a `stable` variable. The fields are an
+    /// implementation detail; operate on it through the functions below.
     public type Enumeration<K> = {
       var array : [var K];
       var size_ : Nat;
       var tree : Tree;
     };
 
-    /// Creates a new empty enumeration.
+    /// Creates a new, empty enumeration.
     ///
     /// Example:
     /// ```motoko
     /// let e = Enumeration.empty<Text>();
     /// ```
+    /// Runtime: O(1)
     public func empty<K>() : Enumeration<K> {
       {
         var array = [var] : [var K];
@@ -157,7 +168,9 @@ module {
       (index == size, index);
     };
 
-    /// Add `key` to enumeration. Returns `size` if the key is new to the enumeration and index of key in enumeration otherwise.
+    /// Add `key` to the enumeration and return its index: a new index (equal to
+    /// the previous `size`) if the key is new, or its existing index if it was
+    /// already present. Use `insert` if you also need to know whether the key was new.
     ///
     /// Example:
     /// ```motoko
@@ -169,7 +182,7 @@ module {
     /// Runtime: O(log(n))
     public func add<K>(self : Enumeration<K>, compare : (implicit : (K, K) -> Order.Order), key : K) : Nat = insert(self, compare, key).1;
 
-    /// Returns `?index` where `index` is the index of `key` in order it was added to enumeration, or `null` if `key` wasn't added.
+    /// Returns `?index`, where `index` is the position of `key` in the order it was added, or `null` if `key` is not present.
     ///
     /// Example:
     /// ```motoko
@@ -217,7 +230,7 @@ module {
       };
     };
 
-    /// Returns `K` with index `index`.
+    /// Returns the key at index `index`.
     /// Traps if `index >= size`.
     ///
     /// Example:
@@ -235,8 +248,7 @@ module {
       };
     };
 
-    /// Returns `K` with index `index` as an option.
-    /// Returns `null` when `index >= size`.
+    /// Returns the key at index `index` as an option, or `null` when `index >= size`.
     ///
     /// Example:
     /// ```motoko
@@ -254,7 +266,7 @@ module {
       };
     };
 
-    /// Returns number of unique keys added to enumeration.
+    /// Returns the number of keys in the enumeration.
     ///
     /// Example:
     /// ```motoko
@@ -330,18 +342,22 @@ module {
   /// primitive `Prim.blobCompare` instead of `Blob.compare`. Prefer this
   /// module whenever the keys are `Blob`s.
   public module EnumerationBlob {
+    /// The enumeration state. It consists only of stable types, so a value can
+    /// be stored directly in a `stable` variable. The fields are an
+    /// implementation detail; operate on it through the functions below.
     public type EnumerationBlob = {
       var array : [var Blob];
       var size_ : Nat;
       var tree : Tree;
     };
 
-    /// Creates a new empty enumeration.
+    /// Creates a new, empty enumeration.
     ///
     /// Example:
     /// ```motoko
     /// let e = EnumerationBlob.empty();
     /// ```
+    /// Runtime: O(1)
     public func empty() : EnumerationBlob {
       {
         var array = [var ""];
@@ -416,7 +432,9 @@ module {
       (index == size, index);
     };
 
-    /// Add `key` to enumeration. Returns `size` if the key is new to the enumeration and index of key in enumeration otherwise.
+    /// Add `key` to the enumeration and return its index: a new index (equal to
+    /// the previous `size`) if the key is new, or its existing index if it was
+    /// already present. Use `insert` if you also need to know whether the key was new.
     ///
     /// Example:
     /// ```motoko
@@ -428,7 +446,7 @@ module {
     /// Runtime: O(log(n))
     public func add(self : EnumerationBlob, key : Blob) : Nat = insert(self, key).1;
 
-    /// Returns `?index` where `index` is the index of `key` in order it was added to enumeration, or `null` if `key` wasn't added.
+    /// Returns `?index`, where `index` is the position of `key` in the order it was added, or `null` if `key` is not present.
     ///
     /// Example:
     /// ```motoko
@@ -479,7 +497,7 @@ module {
       };
     };
 
-    /// Returns `K` with index `index`.
+    /// Returns the key at index `index`.
     /// Traps if `index >= size`.
     ///
     /// Example:
@@ -497,8 +515,7 @@ module {
       };
     };
 
-    /// Returns `K` with index `index`.
-    /// Returns `null` when `index >= size`.
+    /// Returns the key at index `index` as an option, or `null` when `index >= size`.
     ///
     /// Example:
     /// ```motoko
@@ -516,7 +533,7 @@ module {
       };
     };
 
-    /// Returns number of unique keys added to enumeration.
+    /// Returns the number of keys in the enumeration.
     ///
     /// Example:
     /// ```motoko
