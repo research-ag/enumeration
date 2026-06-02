@@ -2,17 +2,14 @@
 
 ## 0.2.0
 
-### Changed
-
-- Updated `core` from `2.0.0` to `2.5.0`.
-- Converted API from class-based to static module (record type). `Enumeration` and `EnumerationBlob` are now directly stable.
-- The implicit `compare` argument now comes second (right after `self`) in `Enumeration.add` and `Enumeration.lookup`, for consistency with `mo:core/Map` and `mo:core/List`.
-- `Enumeration.empty` no longer takes a sentinel argument; it is now `empty<K>()`, matching `mo:core/List.empty`.
-
-### Added
-
-- `insert` (returns `(isNew, index)`), `containsKey`, `isEmpty`, `range`, and `sliceToArray` to both `Enumeration` and `EnumerationBlob`.
-- An `examples/` project (own `mops.toml`) demonstrating canister usage with `Principal` keys, built and type-checked in CI. The test suite no longer depends on `mo:core/Principal`.
+- Re-write of the collections as static records instead of classes that can be declared stable directly.
+- Re-write of the API closely following `core/List` and `core/Map`.
+- Removed requirement to provide a sentinel value to the constructor.
+- Made `compare` function argument implicit. 
+- Added new functions `insert`, `containsKey`, `isEmpty`, `range`, and `sliceToArray`.
+- Added `examples/` project
+- Bumped `core` dependency to `2.5.0`.
+- Set `moc` requirement to `1.0.0`.
 
 ## 0.1.3
 

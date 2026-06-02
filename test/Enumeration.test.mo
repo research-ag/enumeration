@@ -15,7 +15,6 @@ import { test; suite } "mo:test";
 
 let n = 100;
 let r = RNG.RNG();
-let t = Enumeration.empty<Text>();
 let texts = Array.tabulate<Text>(n, func(i) = r.text());
 
 var i = 0;
@@ -26,6 +25,7 @@ suite(
     test(
       "Text",
       func() {
+        let t = Enumeration.empty<Text>();
         assert (t.size() == 0);
         i := 0;
         while (i < n) {

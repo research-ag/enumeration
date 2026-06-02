@@ -15,7 +15,6 @@ import { test; suite } "mo:test";
 
 let n = 100;
 let r = RNG.RNG();
-let b = EnumerationBlob.empty();
 let blobs = Array.tabulate<Blob>(n, func(i) = r.blob());
 
 var i = 0;
@@ -26,6 +25,7 @@ suite(
     test(
       "Blob",
       func() {
+        let b = EnumerationBlob.empty();
         assert (b.size() == 0);
         i := 0;
         while (i < n) {
