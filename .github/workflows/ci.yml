@@ -16,8 +16,8 @@ jobs:
         with:
           node-version: latest
       - uses: caffeinelabs/setup-mops@v1
-      - run: mops install
-      - run: mops test
+      - run: mops install --locked
+      - run: mops test --locked
 
   examples:
     name: Examples
@@ -30,13 +30,13 @@ jobs:
       - uses: caffeinelabs/setup-mops@v1
       - working-directory: examples
         run: |
-          mops install
+          mops install --locked
       - name: Type-check examples
         working-directory: examples
-        run: mops check --verbose
+        run: mops check --locked --verbose
       - name: Build examples
         working-directory: examples
-        run: mops build --verbose
+        run: mops build --locked --verbose
 
   fmt:
     name: Formatting Check
