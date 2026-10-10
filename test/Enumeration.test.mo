@@ -81,7 +81,7 @@ do {
   assert (e.sliceToArray(0, 3) == ["abc", "aaa", "bbb"]);
   assert (e.sliceToArray(1, 3) == ["aaa", "bbb"]);
   assert (e.sliceToArray(2, 2) == []);
-  assert (Iter.toArray(e.range(0, 3)) == ["abc", "aaa", "bbb"]);
-  assert (Iter.toArray(e.range(1, 2)) == ["aaa"]);
-  assert (Iter.toArray(e.range(3, 3)) == []);
+  assert (e.range(0, 3).toArray() == ["abc", "aaa", "bbb"]);
+  assert (e.range(1, 2).toArray() == ["aaa"]);
+  assert (e.range(3, 3).toArray() == []);
 };

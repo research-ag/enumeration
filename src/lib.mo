@@ -21,6 +21,7 @@
 import Array "mo:core/Array";
 import Blob "mo:core/Blob";
 import Iter "mo:core/Iter";
+import Nat "mo:core/Nat";
 import Nat32 "mo:core/Nat32";
 import Order "mo:core/Order";
 import Prim "mo:⛔";
@@ -59,11 +60,11 @@ module {
   // Traps if n_ == 0 or n_ >= 3 * 2 ** 30 (see inline assertions below).
   func next_size(n_ : Nat) : Nat {
     if (n_ == 1) return 2;
-    let n = Nat32.fromNat(n_); // traps if n >= 2 ** 32
+    let n = n_.toNat32(); // traps if n >= 2 ** 32
     let s = 30 - Nat32.bitcountLeadingZero(n); // traps if n == 0
     let m = ((n >> s) +% 1) << s;
     assert (m != 0); // traps if n >= 3 * 2 ** 30
-    Nat32.toNat(m);
+    m.toNat();
   };
 
   /// Bidirectional enumeration of keys of type `K` in the order they are added.

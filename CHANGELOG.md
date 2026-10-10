@@ -1,5 +1,11 @@
 # Enumeration changelog
 
+## 0.2.1
+
+- Bumped `core` dependency from `2.5.0` to `2.6.2`.
+- Replaced deprecated `Nat32.fromNat` with `Nat.toNat32`.
+- Migrated `examples/` to moc 2.0.0.
+
 ## 0.2.0
 
 - Re-write of the collections as static records instead of classes that can be declared stable directly.

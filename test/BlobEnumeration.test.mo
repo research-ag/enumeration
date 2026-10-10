@@ -80,6 +80,6 @@ do {
   ignore e.add("bbb");
   assert (e.sliceToArray(0, 3) == ([("abc" : Blob), ("aaa" : Blob), ("bbb" : Blob)]));
   assert (e.sliceToArray(2, 2) == ([] : [Blob]));
-  assert (Iter.toArray(e.range(0, 2)) == ([("abc" : Blob), ("aaa" : Blob)]));
-  assert (Iter.toArray(e.range(3, 3)) == ([] : [Blob]));
+  assert (e.range(0, 2).toArray() == ([("abc" : Blob), ("aaa" : Blob)]));
+  assert (e.range(3, 3).toArray() == ([] : [Blob]));
 };

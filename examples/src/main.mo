@@ -14,7 +14,7 @@
 import { Enumeration } "mo:enumeration";
 import _Principal "mo:core/Principal";
 
-persistent actor Users {
+actor Users {
   // `Enumeration` is composed of stable types, so it can be held directly in
   // the persistent actor state without any `preupgrade`/`postupgrade` hooks.
   let users = Enumeration.empty<Principal>();
