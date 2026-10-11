@@ -129,9 +129,9 @@ mops test
 
 ### Examples
 
-The [`examples/`](examples/) directory is a self-contained mops project (with
+The [`examples/`](https://github.com/research-ag/enumeration/tree/main/examples) directory is a self-contained mops project (with
 its own `mops.toml`) that demonstrates the library in a canister. The canonical
-example, [`examples/src/main.mo`](examples/src/main.mo), assigns
+example, [`examples/src/main.mo`](https://github.com/research-ag/enumeration/blob/main/examples/src/main.mo), assigns
 permanent user numbers to principals. Type-check and build it with:
 
 ```bash
