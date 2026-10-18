@@ -143,10 +143,16 @@ module {
     case (?(#B, l, i, r)) ?(convert(l), Prim.natToNat32(i) << 1, convert(r));
   };
 
-  public func enumeration<K>(old : OldEnumeration<K>) : Enumeration.Enumeration<K> = {
-    var array = old.array;
-    var size_ = old.size_;
-    var tree = convert(old.tree);
+  public func enumeration<K>(old : OldEnumeration<K>) : Enumeration.Enumeration<K> {
+    // 0.3.0 holds at most 2 ** 31 keys (0.2.x: 3 * 2 ** 30). A larger index
+    // would not fit into the node field, so refuse to migrate: the trap
+    // rejects the upgrade and keeps the old state.
+    if (old.size_ >= 2 ** 31) Prim.trap("Enumeration has more than 2 ** 31 keys: cannot migrate to 0.3.0");
+    {
+      var array = old.array;
+      var size_ = old.size_;
+      var tree = convert(old.tree);
+    };
   };
 };
 
@@ -171,6 +177,7 @@ actor {
 ```
 
 For a `BlobEnumeration`, use the same conversion with `K = Blob`: its fields are the same.
+An enumeration with more than 2^31 keys, possible in 0.2.x but far beyond any canister heap (about 120 GB of tree nodes), cannot be migrated: the migration traps and the upgrade is rejected.
 
 ### Build & test
 
