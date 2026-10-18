@@ -15,7 +15,7 @@ import Types "mo:core/Types";
 module {
   func copyTree(t : Enum.Tree) : Enum.Tree = switch t {
     case null null;
-    case (?(c, l, y, r)) ?(c, copyTree(l), y, copyTree(r));
+    case (?(l, w, r)) ?(copyTree(l), w, copyTree(r));
   };
 
   // Garbage-free deep copy of a core Map (B-tree): new nodes, new arrays and

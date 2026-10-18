@@ -117,6 +117,61 @@ assert e.lookup("abc") == ?0;
 
 ```
 
+### Upgrading from 0.2.x
+
+Version 0.3.0 changed the tree's node layout (the color moved into the index field, see [Implementation notes](#implementation-notes)), so the stable type of `Enumeration` and `BlobEnumeration` changed.
+A canister that keeps an enumeration in a stable variable needs a migration function when it upgrades from 0.2.x.
+Put the old type and the conversion into a module (it has to be a separate file):
+
+```motoko
+// Migration.mo
+import { Enumeration; type Tree } "mo:enumeration";
+import Prim "mo:⛔";
+
+module {
+  // The tree type of enumeration 0.2.x.
+  public type OldTree = ?({ #R; #B }, OldTree, Nat, OldTree);
+  public type OldEnumeration<K> = {
+    var array : [var K];
+    var size_ : Nat;
+    var tree : OldTree;
+  };
+
+  func convert(t : OldTree) : Tree = switch t {
+    case null null;
+    case (?(#R, l, i, r)) ?(convert(l), Prim.natToNat32(i) << 1 | 1, convert(r));
+    case (?(#B, l, i, r)) ?(convert(l), Prim.natToNat32(i) << 1, convert(r));
+  };
+
+  public func enumeration<K>(old : OldEnumeration<K>) : Enumeration.Enumeration<K> = {
+    var array = old.array;
+    var size_ = old.size_;
+    var tree = convert(old.tree);
+  };
+};
+
+```
+
+and use it in the actor's migration:
+
+```motoko
+import { Enumeration } "mo:enumeration";
+import Principal "mo:core/Principal";
+import Migration "Migration";
+
+(
+  with migration = func(old : { users : Migration.OldEnumeration<Principal> }) : {
+    users : Enumeration.Enumeration<Principal>;
+  } = { users = Migration.enumeration(old.users) }
+)
+actor {
+  let users = Enumeration.empty<Principal>();
+};
+
+```
+
+For a `BlobEnumeration`, use the same conversion with `K = Blob`: its fields are the same.
+
 ### Build & test
 
 Run:
@@ -181,8 +236,8 @@ The results are as follows, unit is bytes per entry:
 
 |             | Enumeration | `Map` (B-tree) | `pure/Map` (red-black tree) | zhus |
 | ----------- | ----------- | -------------- | --------------------------- | ---- |
-| 32-bit heap | 24          | 21.2           | 32                          | 28   |
-| 64-bit heap | 56          | 51.6           | 80                          | 56   |
+| 32-bit heap | 20          | 21.2           | 32                          | 28   |
+| 64-bit heap | 48          | 51.6           | 80                          | 56   |
 
 On the 32-bit heap the numbers are the heap left behind after a full garbage collection.
 The incremental GC of moc 2.0.0 offers no such measurement, so on both heaps we also measured the allocation of a structural copy of each data structure (new nodes, keys shared), which allocates exactly its own object graph.
@@ -190,14 +245,14 @@ On the 32-bit heap the copies reproduce the numbers above; the 64-bit row comes 
 `Enumeration<Blob>` and `BlobEnumeration` have the same memory layout.
 
 The 64-bit numbers follow from the node structure: every 32-bit word becomes 8 bytes, and the incremental GC adds one forwarding pointer (8 bytes) per object.
-Enumeration has one object per entry (a red-black tree node: 24 bytes → 56 bytes),
+Enumeration has one object per entry, a red-black tree node with three fields, because the node's color is packed into its index field (20 bytes → 48 bytes);
 `pure/Map` has two (a variant and its tuple), and zhus stores its entries in a few large arrays.
-The B-tree packs up to 31 entries into one node, so it has only about 1.15 objects per entry and is the most memory-efficient on both heaps.
+The B-tree packs up to 31 entries into one node, so it has only about 1.15 objects per entry; it stores a `(key, value)` tuple per entry, though, which keeps it just above Enumeration on both heaps.
 
 For example, if `K` is one of `Nat32, Nat64, Nat` and the values are not boxed (e.g. < 2^30) then in an array each such entry is responsible for 4 bytes on the 32-bit heap and 8 bytes on the 64-bit heap.
-Hence, by the table, each such entry in an `Enumeration<K>` is responsible for `4 + 24 = 28` bytes on the 32-bit heap and `8 + 56 = 64` bytes on the 64-bit heap.
+Hence, by the table, each such entry in an `Enumeration<K>` is responsible for `4 + 20 = 24` bytes on the 32-bit heap and `8 + 48 = 56` bytes on the 64-bit heap.
 As another example, a 32-byte `Blob` as an array entry is responsible for `32 + 12 = 44` bytes on the 32-bit heap and `32 + 32 = 64` bytes on the 64-bit heap.
-Hence, adding a 32-byte entry to an `Enumeration<Blob>` will allocate `44 + 24 = 68` bytes on the 32-bit heap and `64 + 56 = 120` bytes on the 64-bit heap.
+Hence, adding a 32-byte entry to an `Enumeration<Blob>` will allocate `44 + 20 = 64` bytes on the 32-bit heap and `64 + 48 = 112` bytes on the 64-bit heap.
 
 ### Time
 
@@ -210,16 +265,16 @@ The results are as follows, unit is instructions per lookup:
 
 |                     | `BlobEnumeration` | `Enumeration<Blob>` | `Map` (B-tree) | `pure/Map` (red-black tree) | zhus |
 | ------------------- | ----------------- | ------------------- | -------------- | --------------------------- | ---- |
-| hits, 32-bit heap   | 2117              | 2459                | 4395           | 2326                        | 2111 |
-| misses, 32-bit heap | 1434              | 1826                | 4059           | 1672                        | 1178 |
-| hits, 64-bit heap   | 2702              | 3413                | 5967           | 3392                        | 2557 |
-| misses, 64-bit heap | 1900              | 2711                | 5663           | 2699                        | 1401 |
+| hits, 32-bit heap   | 2368              | 2709                | 4395           | 2326                        | 2111 |
+| misses, 32-bit heap | 1719              | 2111                | 4059           | 1672                        | 1178 |
+| hits, 64-bit heap   | 2832              | 3544                | 5967           | 3392                        | 2557 |
+| misses, 64-bit heap | 2048              | 2859                | 5663           | 2699                        | 1401 |
 
 Notes:
 
 - Hits are more expensive than misses in the trees because the final comparison, if it is a match, has to compare the full 32 bytes.
-- `BlobEnumeration` is faster than the generic `Enumeration<Blob>` and than `pure/Map`, but slower than the hash map zhus.
-- The B-tree is the slowest for lookups, but the most memory-efficient.
+- `BlobEnumeration` is faster than the generic `Enumeration<Blob>`, faster than `pure/Map` on the 64-bit heap and about as fast on the 32-bit heap, and slower than the hash map zhus.
+- The B-tree is the slowest for lookups; in memory it comes right after Enumeration.
 
 ## Design
 
@@ -231,20 +286,22 @@ This is particularly important if the keys are long (e.g. `Principal`s).
 
 ## Implementation notes
 
-The red-black tree is in fact a tree of indices (`Nat`)
+The red-black tree is in fact a tree of indices
 and the comparison operation first looks up the keys in the array and then compares those.
+Each node stores its index and its color in one `Nat32` field (`index << 1 | red`), so a node is a single tuple of three fields.
+Decoding the field costs a few instructions per level of a lookup; it saves one word per node.
 This makes lookups by key with the generic `Enumeration<K>` slower than in a red-black tree that stores the keys itself, such as `pure/Map` from `mo:core`
 (as seen in the benchmark)
 but is a necessary trade-off to achieve memory efficiency.
 
 Shrinking of the array and key deletion in the red-black tree are not implemented because Enumeration does not allow key removal.
 
-An enumeration holds at most `3 * 2^30` (about 3.2 billion) keys: that is the largest capacity of the key array, and adding a new key beyond it traps.
-In practice the heap is full long before; on the 64-bit heap the tree nodes of that many keys alone would take about 180 GB.
+An enumeration holds at most `2^31` (about 2.1 billion) keys: a key's index has to fit into the 31 bits of the node field next to the color, and adding a new key beyond that traps.
+In practice the heap is full long before; on the 64-bit heap the tree nodes of that many keys alone would take about 100 GB.
 
 The `BlobEnumeration` module is a performance-specialized variant for `Blob` keys.
 It is functionally equivalent to `Enumeration<Blob>` used with `Blob.compare`, but its red-black tree comparisons use the primitive `Prim.blobCompare` rather than `Blob.compare`, which makes it faster.
-The time benchmark above shows the difference: about 14% (32-bit heap) to 21% (64-bit heap) fewer instructions per hit than the generic `Enumeration<Blob>`.
+The time benchmark above shows the difference: about 13% (32-bit heap) to 20% (64-bit heap) fewer instructions per hit than the generic `Enumeration<Blob>`.
 
 ## Copyright
 

@@ -1,5 +1,11 @@
 # Enumeration changelog
 
+## 0.3.0
+
+- **Breaking (stable type):** a tree node stores its index and its color in one `Nat32` field (`index << 1 | red`) instead of a separate color field: `Tree` is now `?(Tree, Nat32, Tree)`. A node takes 48 instead of 56 bytes on the 64-bit heap and 20 instead of 24 bytes on the 32-bit heap (−14% to −17% memory). A canister that keeps an enumeration in a stable variable needs a migration function to upgrade; see "Upgrading from 0.2.x" in the README.
+- Lookups take about 5–8% more instructions on the 64-bit heap and 12–20% more on the 32-bit heap, for decoding the field.
+- An enumeration now holds at most `2 ** 31` keys (was `3 * 2 ** 30`); `insert` and `add` trap beyond that.
+
 ## 0.2.2
 
 - `lookup` and `containsKey` are iterative instead of recursive: they no longer allocate a closure per call and take about 4–9% fewer instructions.
