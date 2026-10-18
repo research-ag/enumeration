@@ -218,7 +218,7 @@ We compare `Enumeration<K>` against other maps of type `K -> Nat`:
 The functionality of these other maps is not exactly the same but sufficiently overlaps with Enumeration that a comparison is possible. It should be noted that the other maps do not have the inverse map `Nat -> K` like Enumeration does. On the other hand, they offer deletion which Enumeration does not. However, all of them map `K -> Nat`, hence we can compare insertion and lookup operations both in terms of instructions and memory used.
 
 All measurements use N = 4,096 random 32-byte `Blob` keys and were taken with `mops bench` on pocket-ic 15.0.0.
-The benchmark code is in [`bench/`](https://github.com/research-ag/enumeration/tree/main/bench): [`copy.bench.mo`](https://github.com/research-ag/enumeration/blob/main/bench/copy.bench.mo) for memory and [`lookup.bench.mo`](https://github.com/research-ag/enumeration/blob/main/bench/lookup.bench.mo) for time.
+The benchmark code is in [`bench/`](https://github.com/research-ag/enumeration/tree/main/bench): [`copy.bench.mo`](https://github.com/research-ag/enumeration/blob/main/bench/copy.bench.mo) for memory, [`lookup.bench.mo`](https://github.com/research-ag/enumeration/blob/main/bench/lookup.bench.mo) for lookups and [`build.bench.mo`](https://github.com/research-ag/enumeration/blob/main/bench/build.bench.mo) for insertions.
 Run it with `mops bench` (64-bit heap), or with `[toolchain] moc = "1.16.1"` and `mops bench --gc compacting` (32-bit heap).
 The two heaps:
 
@@ -275,6 +275,20 @@ Notes:
 - Hits are more expensive than misses in the trees because the final comparison, if it is a match, has to compare the full 32 bytes.
 - `BlobEnumeration` is faster than the generic `Enumeration<Blob>`, faster than `pure/Map` on the 64-bit heap and about as fast on the 32-bit heap, and slower than the hash map zhus.
 - The B-tree is the slowest for lookups; in memory it comes right after Enumeration.
+
+### Building
+
+For the build benchmark we insert N random 32-byte `Blob`s into an empty map and divide by N.
+The allocation includes all garbage: the persistent trees (Enumeration and `pure/Map`) allocate a new path for every insertion.
+
+The results are as follows, per insertion:
+
+|                              | `BlobEnumeration` | `Enumeration<Blob>` | `Map` (B-tree) | `pure/Map` (red-black tree) | zhus |
+| ---------------------------- | ----------------- | ------------------- | -------------- | --------------------------- | ---- |
+| instructions, 32-bit heap    | 3653              | 4027                | 6295           | 3437                        | 3665 |
+| allocated bytes, 32-bit heap | 381               | 385                 | 93             | 724                         | 64   |
+| instructions, 64-bit heap    | 6063              | 6760                | 8754           | 8957                        | 4278 |
+| allocated bytes, 64-bit heap | 828               | 837                 | 235            | 1772                        | 128  |
 
 ## Design
 
