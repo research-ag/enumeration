@@ -162,7 +162,10 @@ We compare `Enumeration<K>` against other maps of type `K -> Nat`:
 
 The functionality of these other maps is not exactly the same but sufficiently overlaps with Enumeration that a comparison is possible. It should be noted that the other maps do not have the inverse map `Nat -> K` like Enumeration does. On the other hand, they offer deletion which Enumeration does not. However, all of them map `K -> Nat`, hence we can compare insertion and lookup operations both in terms of instructions and memory used.
 
-All measurements use N = 4,096 random 32-byte `Blob` keys and were taken with `mops bench` on pocket-ic 15.0.0, on two heaps:
+All measurements use N = 4,096 random 32-byte `Blob` keys and were taken with `mops bench` on pocket-ic 15.0.0.
+The benchmark code is in [`bench/`](https://github.com/research-ag/enumeration/tree/main/bench): [`copy.bench.mo`](https://github.com/research-ag/enumeration/blob/main/bench/copy.bench.mo) for memory and [`lookup.bench.mo`](https://github.com/research-ag/enumeration/blob/main/bench/lookup.bench.mo) for time.
+Run it with `mops bench` (64-bit heap), or with `[toolchain] moc = "1.16.1"` and `mops bench --gc compacting` (32-bit heap).
+The two heaps:
 
 - 32-bit heap: moc 1.16.1 with legacy persistence and the compacting GC,
 - 64-bit heap: moc 2.0.0 with enhanced orthogonal persistence and the incremental GC.

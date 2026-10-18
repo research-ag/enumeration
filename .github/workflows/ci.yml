@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   test:
-    name: Tests
+    name: Tests and Benchmarks
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -23,6 +23,11 @@ jobs:
       - uses: caffeinelabs/setup-mops@v1
       - run: mops install --locked
       - run: mops test --locked
+      - name: Make sure pocket-ic is installed
+        run: mops toolchain bin pocket-ic
+      - name: Make sure wasm-opt is installed
+        run: mops toolchain bin wasm-opt
+      - run: mops bench --locked
 
   examples:
     name: Examples

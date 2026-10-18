@@ -1,13 +1,23 @@
 {
   "version": 3,
-  "mopsTomlDepsHash": "76f732514c42387a20f717190a7b4c18c0befc2930c0d0dd16538d9d81c5e516",
+  "mopsTomlDepsHash": "b09462a5858c42b4ca8a09df3627d34645d92786c51fbb3c817374cb8ba4bebb",
   "deps": {
-    "core": "2.6.2"
+    "bench-helper": "0.0.4",
+    "core": "2.6.2",
+    "map": "9.0.1"
   },
   "graph": {
-    "core@2.6.2": {}
+    "bench-helper@0.0.4": {},
+    "core@2.6.2": {},
+    "map@9.0.1": {}
   },
   "hashes": {
+    "bench-helper@0.0.4": {
+      "bench-helper@0.0.4/LICENSE": "b9c74cf5b86ce6dc1d415f664aa1b8a08005e2523bdc63a2764f3095df993fc9",
+      "bench-helper@0.0.4/README.md": "6792f023368ebea8d9abadfc5ce0b9222733a9899f46b5d2ae34087a300f94c0",
+      "bench-helper@0.0.4/mops.toml": "016babe250b7f6d5f0a17756d1cda2c1028b6cdde2440d83084fa19237c67b7f",
+      "bench-helper@0.0.4/src/lib.mo": "bc08665d800d0e48fb83d21a2a4e83e6d64728bd55672059d19dd478c7589e27"
+    },
     "core@2.6.2": {
       "core@2.6.2/LICENSE": "840e3d57a38a8061f55d04470fbd58b9345326fa04ea10ee42add5c6e3b2aa08",
       "core@2.6.2/NOTICE": "d62ca4ef9e2c9df064115c339013593cf0769e2b9dc78fa4b3211222541c7f83",
@@ -66,6 +76,41 @@
       "core@2.6.2/src/pure/Queue.mo": "6436a3c07dcaba9df113c04b289f4f1f75599cdccf8a34b266187212e37927ed",
       "core@2.6.2/src/pure/RealTimeQueue.mo": "1a80e071b0282c608ebaa26544dea6bd747915c8023d86b7da7614febf23c7a5",
       "core@2.6.2/src/pure/Set.mo": "a5317cfdf0b4aeaa19008d4d5dc3dc744cb631fc4de0d43f2d18360e56707e0a"
+    },
+    "map@9.0.1": {
+      "map@9.0.1/README.md": "d82170254be14dffbe42591deff3b6f5507b9efe9c2d4d416529ee0a5f8a1c77",
+      "map@9.0.1/mops.toml": "2d39600b74fd262e71ab620d94bb3727ef0228d056fbc1cdd0e4742063ea74f2",
+      "map@9.0.1/src/Map/const.mo": "daa2d3cd2e3f59c0793666d5d7be30e097f38bba34d1f818f72672e8ee31ecb3",
+      "map@9.0.1/src/Map/lib.mo": "b04a6971d237b5869ffb21f4c061993039b5d3aa7fae9e998583c9d56f2811ad",
+      "map@9.0.1/src/Map/modules/clone.mo": "26e81e881eb3ee489231233f1dc8ec25b4a3c546a9e12cc0746892a8271c316a",
+      "map@9.0.1/src/Map/modules/find.mo": "2074f9bcb0fabd7d5ea7331315ba5b91926e25f35de23a1c9ef2b09bf9e8dea9",
+      "map@9.0.1/src/Map/modules/fromIter.mo": "3e6791d684a59c0894e5e3fe5b4f2ccfd3117f6cfa8a57aa5617bb681420454e",
+      "map@9.0.1/src/Map/modules/get.mo": "1e8683d00760fa32a3b365ce9be5d246b8773da1eaf827d9c86e43974390d3f4",
+      "map@9.0.1/src/Map/modules/init.mo": "cfdbd9a081b89d36b53514d7256569822fb7583cb5623b009ae1a530b11fa3c5",
+      "map@9.0.1/src/Map/modules/iterate.mo": "86c249769b5e338dce5a9b9eec4e0f9d68cc5ca637131364d78d1f263cb10030",
+      "map@9.0.1/src/Map/modules/put.mo": "6f763f9eb1360e8f50cd6dcdd99d09476b5740f63efd14b350295b0742330092",
+      "map@9.0.1/src/Map/modules/queue.mo": "129b5e107fe76d8c7acff3bee75b0fc78d4fd8868234769282d652d517f703b7",
+      "map@9.0.1/src/Map/modules/rehash.mo": "2b5455e77226245e32ce1b06d7dbfce5d2f7eccf6f288f34dea4d7bd22c12dee",
+      "map@9.0.1/src/Map/modules/remove.mo": "54151a37caa332012c1798964c83f37752cb6256b93964c7ec75df2df63420ff",
+      "map@9.0.1/src/Map/modules/toArray.mo": "e0d29cbb4be5959f7741f8e5b89a571076d33aa959357fcfe1809e1e787f1f84",
+      "map@9.0.1/src/Map/types.mo": "828fd9cd9ef34664fa50a149ed5c3b4ac66c937b5f47c57f183a2b9a8cf67372",
+      "map@9.0.1/src/Map/utils.mo": "0c44db72a226c91483390ce286593d2d92550c28f77ff9b5810992b57fa7c438",
+      "map@9.0.1/src/Set/const.mo": "daa2d3cd2e3f59c0793666d5d7be30e097f38bba34d1f818f72672e8ee31ecb3",
+      "map@9.0.1/src/Set/lib.mo": "d28b2ac313579d88454ae4d68d17181ab8de0e2d5ecca4df79d4f895a79181ab",
+      "map@9.0.1/src/Set/modules/clone.mo": "86986a4f96d731b2881f1ab7281862bf8ee65a8abb4de59f22e72c08272cb856",
+      "map@9.0.1/src/Set/modules/find.mo": "3f61a8644f712eda9367ae31a46366b48cb40c2c78b00946448a5fbdcb61acbc",
+      "map@9.0.1/src/Set/modules/fromIter.mo": "6d39cf258febd9dba33f34bd8d5c00fdd42308417c1a5ba4bb6de39508dd591e",
+      "map@9.0.1/src/Set/modules/get.mo": "1892927614478eb35428238323231b9f52dcea31bdcc129fd5e8359da6752616",
+      "map@9.0.1/src/Set/modules/init.mo": "0ae14693721844f6dc6c3f14bcde059fdbb64620ee552c78e8c81bb7579c4361",
+      "map@9.0.1/src/Set/modules/iterate.mo": "6288764f10ff9b6cd7d8f637fbed046e344c9b4e26727132a0bda6a824a8251f",
+      "map@9.0.1/src/Set/modules/put.mo": "ef25497595c08e4217f5603aa1c16b973e2d31303a58f1e51dc159442b088392",
+      "map@9.0.1/src/Set/modules/queue.mo": "d2396b0fdb8531cbdf29200c5dcf1704a0704922c00e0ea8f483b5c2c3ba8b13",
+      "map@9.0.1/src/Set/modules/rehash.mo": "133228a3521069233e6b676de05e84fba4f28e3fff63b5dfce1d1a603b4bf609",
+      "map@9.0.1/src/Set/modules/remove.mo": "9548e3d1df5b82d68dd469ca6aa30f06d9619ae2ab7068b8344505349b487feb",
+      "map@9.0.1/src/Set/modules/toArray.mo": "6d6c3162ba79935d56390dfd4cb3434493b2c121cf09aa3b2a2af9b12e276eed",
+      "map@9.0.1/src/Set/types.mo": "2f369ce007b606c416ce5ce3a587624d890899356aa1b8eba324a7f4caea26e6",
+      "map@9.0.1/src/Set/utils.mo": "0c44db72a226c91483390ce286593d2d92550c28f77ff9b5810992b57fa7c438",
+      "map@9.0.1/test.mo": "1dbf0189e91fe529366dbca96b265728ae4ebedab0072ed3a8e6c1b40b1f2b95"
     }
   }
 }

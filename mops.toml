@@ -9,8 +9,16 @@ license = "Apache-2.0"
 [dependencies]
 core = "2.6.2"
 
+[dev-dependencies]
+bench-helper = "0.0.4"
+map = "9.0.1"
+
 [requirements]
 moc = "1.0.0"
 
 [toolchain]
 moc = "2.0.0"
+pocket-ic = "15.0.0"
+wasm-opt = "133"
+
+[optimize]
