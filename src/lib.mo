@@ -44,8 +44,10 @@ module {
   // The word of a new (red) node for `index`. Traps if the index does not
   // fit into the 31 bits next to the color.
   func redWord(index : Nat) : Nat32 {
-    if (index >= 0x8000_0000) Runtime.trap("Enumeration is full (2 ** 31 keys)");
-    Prim.natToNat32(index) << 1 | 1;
+    // Compared as Nat32: 2 ** 31 is not a compact Nat on the 32-bit heap.
+    let i = Prim.natToNat32(index);
+    if (i >= 0x8000_0000) Runtime.trap("Enumeration is full (2 ** 31 keys)");
+    i << 1 | 1;
   };
 
   // ── Red-black tree / array-growth helpers shared by both modules ──
