@@ -71,6 +71,12 @@ module {
   /// The map from `K` to index `Nat` is implemented as a red-black tree;
   /// the map from index `Nat` to `K` is implemented as an array.
   ///
+  /// The functions that compare keys (`insert`, `add`, `lookup`, `containsKey`)
+  /// take the comparison as an implicit argument `compare`. It is resolved from
+  /// the key type, so the key type's module must be imported, e.g.
+  /// `import Text "mo:core/Text"` for `Text` keys. The examples below assume
+  /// that import.
+  ///
   /// Example:
   /// ```motoko
   /// let e = Enumeration.empty<Text>();
@@ -112,7 +118,7 @@ module {
     /// assert(e.insert("aaa") == (true, 1));
     /// assert(e.insert("abc") == (false, 0));
     /// ```
-    /// Runtime: O(log(n))
+    /// Runtime: O(log(n)) amortized; O(n) when the key array has to grow.
     public func insert<K>(self : Enumeration<K>, compare : (implicit : (K, K) -> Order.Order), key : K) : (Bool, Nat) {
       let array = self.array;
       let size = self.size_;
@@ -180,7 +186,7 @@ module {
     /// assert(e.add("aaa") == 1);
     /// assert(e.add("abc") == 0);
     /// ```
-    /// Runtime: O(log(n))
+    /// Runtime: O(log(n)) amortized; O(n) when the key array has to grow.
     public func add<K>(self : Enumeration<K>, compare : (implicit : (K, K) -> Order.Order), key : K) : Nat = insert(self, compare, key).1;
 
     /// Returns `?index`, where `index` is the position of `key` in the order it was added, or `null` if `key` is not present.
@@ -339,9 +345,10 @@ module {
   /// A performance-optimized version of `Enumeration<Blob>`.
   ///
   /// It is functionally equivalent to `Enumeration.empty<Blob>()` used with
-  /// `Blob.compare`, but faster: the red-black tree comparisons use the
-  /// primitive `Prim.blobCompare` instead of `Blob.compare`. Prefer this
-  /// module whenever the keys are `Blob`s.
+  /// `Blob.compare`, but faster: the red-black tree compares with the primitive
+  /// `Prim.blobCompare` directly, without calling a `compare` function and
+  /// converting the result to an `Order`. Prefer this module whenever the keys
+  /// are `Blob`s.
   public module BlobEnumeration {
     /// The enumeration state. It consists only of stable types, so a value can
     /// be stored directly in a `stable` variable. The fields are an
@@ -379,7 +386,7 @@ module {
     /// assert(e.insert("aaa") == (true, 1));
     /// assert(e.insert("abc") == (false, 0));
     /// ```
-    /// Runtime: O(log(n))
+    /// Runtime: O(log(n)) amortized; O(n) when the key array has to grow.
     public func insert(self : BlobEnumeration, key : Blob) : (Bool, Nat) {
       let array = self.array;
       let size = self.size_;
@@ -444,7 +451,7 @@ module {
     /// assert(e.add("aaa") == 1);
     /// assert(e.add("abc") == 0);
     /// ```
-    /// Runtime: O(log(n))
+    /// Runtime: O(log(n)) amortized; O(n) when the key array has to grow.
     public func add(self : BlobEnumeration, key : Blob) : Nat = insert(self, key).1;
 
     /// Returns `?index`, where `index` is the position of `key` in the order it was added, or `null` if `key` is not present.

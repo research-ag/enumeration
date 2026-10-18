@@ -5,6 +5,7 @@
 - Bumped `core` dependency from `2.5.0` to `2.6.2`.
 - Replaced deprecated `Nat32.fromNat` with `Nat.toNat32`.
 - Migrated `examples/` to moc 2.0.0.
+- Updated the README and the doc comments.
 
 ## 0.2.0
 
