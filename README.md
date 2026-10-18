@@ -179,11 +179,17 @@ The results are as follows, unit is bytes per entry:
 |             | Enumeration | `Map` (B-tree) | `pure/Map` (red-black tree) | zhus |
 | ----------- | ----------- | -------------- | --------------------------- | ---- |
 | 32-bit heap | 24          | 21.2           | 32                          | 28   |
-| 64-bit heap | 56          |                |                             |      |
+| 64-bit heap | 56          | 51.6           | 80                          | 56   |
 
-The 32-bit numbers are measured: the heap left behind after a full garbage collection.
-The incremental GC of moc 2.0.0 offers no such measurement, so the 64-bit number for Enumeration is computed: its overhead per entry is one red-black tree node, which takes 56 bytes on the 64-bit heap (24 bytes on the 32-bit heap, which reproduces the measured 32-bit number).
+On the 32-bit heap the numbers are the heap left behind after a full garbage collection.
+The incremental GC of moc 2.0.0 offers no such measurement, so on both heaps we also measured the allocation of a structural copy of each data structure (new nodes, keys shared), which allocates exactly its own object graph.
+On the 32-bit heap the copies reproduce the numbers above; the 64-bit row comes from the copies.
 `Enumeration<Blob>` and `BlobEnumeration` have the same memory layout.
+
+The 64-bit numbers follow from the node structure: every 32-bit word becomes 8 bytes, and the incremental GC adds one forwarding pointer (8 bytes) per object.
+Enumeration has one object per entry (a red-black tree node: 24 bytes → 56 bytes),
+`pure/Map` has two (a variant and its tuple), and zhus stores its entries in a few large arrays.
+The B-tree packs up to 31 entries into one node, so it has only about 1.15 objects per entry and is the most memory-efficient on both heaps.
 
 For example, if `K` is one of `Nat32, Nat64, Nat` and the values are not boxed (e.g. < 2^30) then in an array each such entry is responsible for 4 bytes on the 32-bit heap and 8 bytes on the 64-bit heap.
 Hence, by the table, each such entry in an `Enumeration<K>` is responsible for `4 + 24 = 28` bytes on the 32-bit heap and `8 + 56 = 64` bytes on the 64-bit heap.
