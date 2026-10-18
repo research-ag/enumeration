@@ -1,5 +1,9 @@
 # Enumeration changelog
 
+## 0.2.2
+
+- `lookup` and `containsKey` are iterative instead of recursive: they no longer allocate a closure per call and take about 4–9% fewer instructions.
+
 ## 0.2.1
 
 - Bumped `core` dependency from `2.5.0` to `2.6.2`.

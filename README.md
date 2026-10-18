@@ -210,10 +210,10 @@ The results are as follows, unit is instructions per lookup:
 
 |                     | `BlobEnumeration` | `Enumeration<Blob>` | `Map` (B-tree) | `pure/Map` (red-black tree) | zhus |
 | ------------------- | ----------------- | ------------------- | -------------- | --------------------------- | ---- |
-| hits, 32-bit heap   | 2198              | 2580                | 4395           | 2326                        | 2111 |
-| misses, 32-bit heap | 1530              | 1964                | 4059           | 1672                        | 1178 |
-| hits, 64-bit heap   | 2876              | 3590                | 5967           | 3392                        | 2557 |
-| misses, 64-bit heap | 2075              | 2886                | 5663           | 2699                        | 1401 |
+| hits, 32-bit heap   | 2117              | 2459                | 4395           | 2326                        | 2111 |
+| misses, 32-bit heap | 1434              | 1826                | 4059           | 1672                        | 1178 |
+| hits, 64-bit heap   | 2702              | 3413                | 5967           | 3392                        | 2557 |
+| misses, 64-bit heap | 1900              | 2711                | 5663           | 2699                        | 1401 |
 
 Notes:
 
@@ -244,7 +244,7 @@ In practice the heap is full long before; on the 64-bit heap the tree nodes of t
 
 The `BlobEnumeration` module is a performance-specialized variant for `Blob` keys.
 It is functionally equivalent to `Enumeration<Blob>` used with `Blob.compare`, but its red-black tree comparisons use the primitive `Prim.blobCompare` rather than `Blob.compare`, which makes it faster.
-The time benchmark above shows the difference: about 15% (32-bit heap) to 20% (64-bit heap) fewer instructions per hit than the generic `Enumeration<Blob>`.
+The time benchmark above shows the difference: about 14% (32-bit heap) to 21% (64-bit heap) fewer instructions per hit than the generic `Enumeration<Blob>`.
 
 ## Copyright
 
