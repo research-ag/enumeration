@@ -118,6 +118,9 @@ module {
     /// assert(e.insert("aaa") == (true, 1));
     /// assert(e.insert("abc") == (false, 0));
     /// ```
+    /// Traps if the enumeration already holds the maximum of `3 * 2 ** 30`
+    /// keys and `key` is new.
+    ///
     /// Runtime: O(log(n)) amortized; O(n) when the key array has to grow.
     public func insert<K>(self : Enumeration<K>, compare : (implicit : (K, K) -> Order.Order), key : K) : (Bool, Nat) {
       let array = self.array;
@@ -186,6 +189,9 @@ module {
     /// assert(e.add("aaa") == 1);
     /// assert(e.add("abc") == 0);
     /// ```
+    /// Traps if the enumeration already holds the maximum of `3 * 2 ** 30`
+    /// keys and `key` is new.
+    ///
     /// Runtime: O(log(n)) amortized; O(n) when the key array has to grow.
     public func add<K>(self : Enumeration<K>, compare : (implicit : (K, K) -> Order.Order), key : K) : Nat = insert(self, compare, key).1;
 
@@ -386,6 +392,9 @@ module {
     /// assert(e.insert("aaa") == (true, 1));
     /// assert(e.insert("abc") == (false, 0));
     /// ```
+    /// Traps if the enumeration already holds the maximum of `3 * 2 ** 30`
+    /// keys and `key` is new.
+    ///
     /// Runtime: O(log(n)) amortized; O(n) when the key array has to grow.
     public func insert(self : BlobEnumeration, key : Blob) : (Bool, Nat) {
       let array = self.array;
@@ -451,6 +460,9 @@ module {
     /// assert(e.add("aaa") == 1);
     /// assert(e.add("abc") == 0);
     /// ```
+    /// Traps if the enumeration already holds the maximum of `3 * 2 ** 30`
+    /// keys and `key` is new.
+    ///
     /// Runtime: O(log(n)) amortized; O(n) when the key array has to grow.
     public func add(self : BlobEnumeration, key : Blob) : Nat = insert(self, key).1;
 

@@ -142,9 +142,6 @@ mops check   # type-check
 mops build   # compile the canister to Wasm
 ```
 
-Keeping the `Principal` usage in an example (rather than in the test suite)
-means the tests themselves do not depend on `mo:core/Principal`.
-
 ## Formatting
 
 This project uses `prettier` with `prettier-plugin-motoko` for formatting.
@@ -227,6 +224,9 @@ This makes lookups by key slightly slower than in the RBTree from motoko-base
 but is a necessary trade-off to achieve memory efficiency.
 
 Shrinking of the array and key deletion in the red-black tree are not implemented because Enumeration does not allow key removal.
+
+An enumeration holds at most `3 * 2^30` (about 3.2 billion) keys: that is the largest capacity of the key array, and adding a new key beyond it traps.
+In practice the heap is full long before; on the 64-bit heap the tree nodes of that many keys alone would take about 180 GB.
 
 The `BlobEnumeration` module is a performance-specialized variant for `Blob` keys.
 It is functionally equivalent to `Enumeration<Blob>` used with `Blob.compare`, but its red-black tree comparisons use the primitive `Prim.blobCompare` rather than `Blob.compare`, which makes it faster.
