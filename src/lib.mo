@@ -209,21 +209,19 @@ module {
     /// Runtime: O(log(n))
     public func lookup<K>(self : Enumeration<K>, compare : (implicit : (K, K) -> Order.Order), key : K) : ?Nat {
       let array = self.array;
-
-      func get_in_tree(x : K, t : Tree) : ?Nat {
+      var t = self.tree;
+      loop {
         switch t {
           case (?(_, l, y, r)) {
-            switch (compare(x, array[y])) {
-              case (#less) get_in_tree(x, l);
-              case (#equal) ?y;
-              case (#greater) get_in_tree(x, r);
+            switch (compare(key, array[y])) {
+              case (#less) t := l;
+              case (#equal) return ?y;
+              case (#greater) t := r;
             };
           };
-          case (null) null;
+          case (null) return null;
         };
       };
-
-      get_in_tree(key, self.tree);
     };
 
     /// Returns `true` if `key` is present in the enumeration, `false` otherwise.
@@ -480,24 +478,22 @@ module {
     /// Runtime: O(log(n))
     public func lookup(self : BlobEnumeration, key : Blob) : ?Nat {
       let array = self.array;
-
-      func get_in_tree(x : Blob, t : Tree) : ?Nat {
+      var t = self.tree;
+      loop {
         switch t {
           case (?(_, l, y, r)) {
-            let res = Prim.blobCompare(x, array[y]);
+            let res = Prim.blobCompare(key, array[y]);
             if (res < 0) {
-              get_in_tree(x, l);
+              t := l;
             } else if (res > 0) {
-              get_in_tree(x, r);
+              t := r;
             } else {
-              ?y;
+              return ?y;
             };
           };
-          case (null) null;
+          case (null) return null;
         };
       };
-
-      get_in_tree(key, self.tree);
     };
 
     /// Returns `true` if `key` is present in the enumeration, `false` otherwise.
