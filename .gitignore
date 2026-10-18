@@ -11,7 +11,6 @@ vessel.dhall
 site/
 modoc-tmp
 .icp/
-mops.lock
 node_modules/
 package.json
 package-lock.json

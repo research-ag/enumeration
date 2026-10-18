@@ -2,8 +2,10 @@
 main = "src/main.mo"
 
 [dependencies]
-core = "2.5.0"
+core = "2.6.2"
 enumeration = "../"
+# Replace with:
+# enumeration = "0.2.1"
 
 [toolchain]
-moc = "1.6.0"
+moc = "2.0.0"

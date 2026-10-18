@@ -9,6 +9,7 @@
 import Array "mo:core/Array";
 import Blob "mo:core/Blob";
 import Char "mo:core/Char";
+import Nat "mo:core/Nat";
 import Nat8 "mo:core/Nat8";
 import Nat32 "mo:core/Nat32";
 
@@ -23,8 +24,8 @@ module {
     };
 
     public func blob() : Blob {
-      let a = Array.tabulate<Nat8>(29, func(i) = Nat8.fromNat(next() % 256));
-      Blob.fromArray(a);
+      let a = Array.tabulate<Nat8>(29, func(i) = (next() % 256).toNat8());
+      a.toBlob();
     };
 
     public func text() : Text {
@@ -32,7 +33,7 @@ module {
       var j = 0;
       while (j < 24) {
         // map to a lowercase letter 'a'..'z'
-        t #= Char.toText(Char.fromNat32(97 + Nat32.fromNat(next() % 26)));
+        t #= (97 + (next() % 26).toNat32()).toChar().toText();
         j += 1;
       };
       t;
