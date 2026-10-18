@@ -285,9 +285,9 @@ The results are as follows, per insertion:
 
 |                              | `BlobEnumeration` | `Enumeration<Blob>` | `Map` (B-tree) | `pure/Map` (red-black tree) | zhus |
 | ---------------------------- | ----------------- | ------------------- | -------------- | --------------------------- | ---- |
-| instructions, 32-bit heap    | 3653              | 4027                | 6295           | 3437                        | 3665 |
+| instructions, 32-bit heap    | 3644              | 4018                | 6295           | 3437                        | 3665 |
 | allocated bytes, 32-bit heap | 381               | 385                 | 93             | 724                         | 64   |
-| instructions, 64-bit heap    | 6063              | 6760                | 8754           | 8957                        | 4278 |
+| instructions, 64-bit heap    | 6052              | 6749                | 8754           | 8957                        | 4278 |
 | allocated bytes, 64-bit heap | 828               | 837                 | 235            | 1772                        | 128  |
 
 ## Design
