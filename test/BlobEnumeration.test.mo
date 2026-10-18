@@ -10,6 +10,7 @@
 
 import { BlobEnumeration } "../src";
 import RNG "RNG";
+import Tree "Tree";
 import Array "mo:core/Array";
 import Blob "mo:core/Blob";
 import Iter "mo:core/Iter";
@@ -82,4 +83,18 @@ do {
   assert (e.sliceToArray(2, 2) == ([] : [Blob]));
   assert (e.range(0, 2).toArray() == ([("abc" : Blob), ("aaa" : Blob)]));
   assert (e.range(3, 3).toArray() == ([] : [Blob]));
+};
+
+// red-black invariants while growing, with repeated keys
+do {
+  let keys = Array.tabulate<Blob>(500, func(_) = r.blob());
+  let e = BlobEnumeration.empty();
+  var i = 0;
+  while (i < 2000) {
+    ignore e.add(keys[(i * 7) % 500]);
+    if (i % 100 == 0) ignore Tree.validate(e.tree, e.size(), func(j) = e.at(j), Blob.compare);
+    i += 1;
+  };
+  assert e.size() == 500;
+  ignore Tree.validate(e.tree, e.size(), func(j) = e.at(j), Blob.compare);
 };

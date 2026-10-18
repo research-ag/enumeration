@@ -10,6 +10,7 @@
 
 import { Enumeration } "../src";
 import RNG "RNG";
+import Tree "Tree";
 import Array "mo:core/Array";
 import Iter "mo:core/Iter";
 import Text "mo:core/Text";
@@ -84,4 +85,18 @@ do {
   assert (e.range(0, 3).toArray() == ["abc", "aaa", "bbb"]);
   assert (e.range(1, 2).toArray() == ["aaa"]);
   assert (e.range(3, 3).toArray() == []);
+};
+
+// red-black invariants while growing, with repeated keys
+do {
+  let keys = Array.tabulate<Text>(500, func(_) = r.text());
+  let e = Enumeration.empty<Text>();
+  var i = 0;
+  while (i < 2000) {
+    ignore e.add(keys[(i * 7) % 500]);
+    if (i % 100 == 0) ignore Tree.validate(e.tree, e.size(), func(j) = e.at(j), Text.compare);
+    i += 1;
+  };
+  assert e.size() == 500;
+  ignore Tree.validate(e.tree, e.size(), func(j) = e.at(j), Text.compare);
 };

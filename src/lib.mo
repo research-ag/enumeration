@@ -29,42 +29,87 @@ import Runtime "mo:core/Runtime";
 import VarArray "mo:core/VarArray";
 
 module {
-  /// A red-black tree node. The `Nat` payload is not a key but an *index* into
-  /// the key array; comparisons during tree operations dereference the array.
-  /// `null` is the empty tree (also used for leaves).
-  public type Tree = ?({ #R; #B }, Tree, Nat, Tree);
+  /// A red-black tree node: `?(left, word, right)`. The word packs the node's
+  /// *index* into the key array with its color, `word = index << 1 | red`,
+  /// where `red` is 1 for a red node and 0 for a black one. The index is not a
+  /// key: comparisons during tree operations dereference the array. `null` is
+  /// the empty tree (also used for leaves). Packing the color into the index
+  /// makes a node a single tuple of three fields. The index has 31 bits, so an
+  /// enumeration holds at most `2 ** 31` keys.
+  public type Tree = ?(Tree, Nat32, Tree);
+
+  // The index stored in a node's word.
+  func indexOf(w : Nat32) : Nat = Prim.nat32ToNat(w >> 1);
+
+  // The word of a new (red) node for `index`. The index is below the array's
+  // capacity, at most 2 ** 31 (see `next_size`), so it fits into the 31 bits
+  // next to the color. Inserting into a full enumeration of 2 ** 31 keys
+  // computes a wrong word here, but then traps in `next_size`, which reverts
+  // the whole message.
+  func redWord(index : Nat) : Nat32 = Prim.intToNat32Wrap(index) << 1 | 1;
 
   // ── Red-black tree / array-growth helpers shared by both modules ──
 
   // Rebalances a subtree after an insertion into its left child
-  // (standard Okasaki red-black tree balancing).
-  func lbalance(left : Tree, y : Nat, right : Tree) : Tree {
-    switch (left, right) {
-      case (?(#R, ?(#R, l1, y1, r1), y2, r2), r) ?(#R, ?(#B, l1, y1, r1), y2, ?(#B, r2, y, r));
-      case (?(#R, l1, y1, ?(#R, l2, y2, r2)), r) ?(#R, ?(#B, l1, y1, l2), y2, ?(#B, r2, y, r));
-      case _ ?(#B, left, y, right);
+  // (standard Okasaki red-black tree balancing). `yb` is the (black) word of
+  // the node being rebuilt; `w ^ 1` turns a red word black.
+  func lbalance(left : Tree, yb : Nat32, right : Tree) : Tree {
+    switch left {
+      case (?(ll, lw, lr)) {
+        if (lw & 1 == 1) {
+          switch ll {
+            case (?(l1, w1, r1)) if (w1 & 1 == 1) return ?(?(l1, w1 ^ 1, r1), lw, ?(lr, yb, right));
+            case null {};
+          };
+          switch lr {
+            case (?(l2, w2, r2)) if (w2 & 1 == 1) return ?(?(ll, lw ^ 1, l2), w2, ?(r2, yb, right));
+            case null {};
+          };
+        };
+      };
+      case null {};
     };
+    ?(left, yb, right);
   };
 
   // Rebalances a subtree after an insertion into its right child (mirror of `lbalance`).
-  func rbalance(left : Tree, y : Nat, right : Tree) : Tree {
-    switch (left, right) {
-      case (l, ?(#R, l1, y1, ?(#R, l2, y2, r2))) ?(#R, ?(#B, l, y, l1), y1, ?(#B, l2, y2, r2));
-      case (l, ?(#R, ?(#R, l1, y1, r1), y2, r2)) ?(#R, ?(#B, l, y, l1), y1, ?(#B, r1, y2, r2));
-      case _ ?(#B, left, y, right);
+  func rbalance(left : Tree, yb : Nat32, right : Tree) : Tree {
+    switch right {
+      case (?(rl, rw, rr)) {
+        if (rw & 1 == 1) {
+          switch rr {
+            case (?(l2, w2, r2)) if (w2 & 1 == 1) return ?(?(left, yb, rl), rw, ?(l2, w2 ^ 1, r2));
+            case null {};
+          };
+          switch rl {
+            case (?(l1, w1, r1)) if (w1 & 1 == 1) return ?(?(left, yb, l1), w1, ?(r1, rw ^ 1, rr));
+            case null {};
+          };
+        };
+      };
+      case null {};
     };
+    ?(left, yb, right);
   };
 
-  // Returns the next array capacity, growing the current size `n_` by a factor
-  // of roughly sqrt(2) and rounding to a multiple of a power of two.
-  // Traps if n_ == 0 or n_ >= 3 * 2 ** 30 (see inline assertions below).
+  // The tree after an insertion, with its root made black.
+  func blackRoot(t : Tree) : Tree = switch t {
+    case (?(l, w, r)) if (w & 1 == 1) ?(l, w ^ 1, r) else t;
+    case null t;
+  };
+
+  // Returns the next array capacity when the array of `n_` slots is full,
+  // growing by a factor of roughly sqrt(2) and rounding to a multiple of a
+  // power of two: 1, 2, 3, 4, 6, 8, 12, ..., 3 * 2 ** 29, 2 ** 31.
+  // Traps when the array already has 2 ** 31 slots: an enumeration holds at
+  // most 2 ** 31 keys, so that a key's index fits into the 31 bits of a node's
+  // word next to the color. Also traps if n_ == 0.
   func next_size(n_ : Nat) : Nat {
     if (n_ == 1) return 2;
-    let n = n_.toNat32(); // traps if n >= 2 ** 32
+    let n = Prim.intToNat32Wrap(n_); // no wrap: the capacity is at most 2 ** 31
+    if (n & 0x8000_0000 != 0) Runtime.trap("Enumeration is full (2 ** 31 keys)");
     let s = 30 - Nat32.bitcountLeadingZero(n); // traps if n == 0
-    let m = ((n >> s) +% 1) << s;
-    assert (m != 0); // traps if n >= 3 * 2 ** 30
-    m.toNat();
+    (((n >> s) +% 1) << s).toNat();
   };
 
   /// Bidirectional enumeration of keys of type `K` in the order they are added.
@@ -118,8 +163,8 @@ module {
     /// assert(e.insert("aaa") == (true, 1));
     /// assert(e.insert("abc") == (false, 0));
     /// ```
-    /// Traps if the enumeration already holds the maximum of `3 * 2 ** 30`
-    /// keys and `key` is new.
+    /// Traps if the enumeration already holds the maximum of `2 ** 31` keys
+    /// and `key` is new.
     ///
     /// Runtime: O(log(n)) amortized; O(n) when the key array has to grow.
     public func insert<K>(self : Enumeration<K>, compare : (implicit : (K, K) -> Order.Order), key : K) : (Bool, Nat) {
@@ -130,20 +175,11 @@ module {
 
       func ins(tree : Tree) : Tree {
         switch tree {
-          case (?(#B, left, y, right)) {
+          case (?(left, w, right)) {
+            let y = indexOf(w);
             switch (compare(key, array[y])) {
-              case (#less) lbalance(ins(left), y, right);
-              case (#greater) rbalance(left, y, ins(right));
-              case (#equal) {
-                index := y;
-                tree;
-              };
-            };
-          };
-          case (?(#R, left, y, right)) {
-            switch (compare(key, array[y])) {
-              case (#less) ?(#R, ins(left), y, right);
-              case (#greater) ?(#R, left, y, ins(right));
+              case (#less) if (w & 1 == 0) lbalance(ins(left), w, right) else ?(ins(left), w, right);
+              case (#greater) if (w & 1 == 0) rbalance(left, w, ins(right)) else ?(left, w, ins(right));
               case (#equal) {
                 index := y;
                 tree;
@@ -152,15 +188,12 @@ module {
           };
           case (null) {
             index := size;
-            ?(#R, null, size, null);
+            ?(null, redWord(size), null);
           };
         };
       };
 
-      self.tree := switch (ins(self.tree)) {
-        case (?(#R, left, y, right)) ?(#B, left, y, right);
-        case other other;
-      };
+      self.tree := blackRoot(ins(self.tree));
 
       if (index == size) {
         if (size == array.size()) {
@@ -189,8 +222,8 @@ module {
     /// assert(e.add("aaa") == 1);
     /// assert(e.add("abc") == 0);
     /// ```
-    /// Traps if the enumeration already holds the maximum of `3 * 2 ** 30`
-    /// keys and `key` is new.
+    /// Traps if the enumeration already holds the maximum of `2 ** 31` keys
+    /// and `key` is new.
     ///
     /// Runtime: O(log(n)) amortized; O(n) when the key array has to grow.
     public func add<K>(self : Enumeration<K>, compare : (implicit : (K, K) -> Order.Order), key : K) : Nat = insert(self, compare, key).1;
@@ -212,7 +245,8 @@ module {
       var t = self.tree;
       loop {
         switch t {
-          case (?(_, l, y, r)) {
+          case (?(l, w, r)) {
+            let y = indexOf(w);
             switch (compare(key, array[y])) {
               case (#less) t := l;
               case (#equal) return ?y;
@@ -390,8 +424,8 @@ module {
     /// assert(e.insert("aaa") == (true, 1));
     /// assert(e.insert("abc") == (false, 0));
     /// ```
-    /// Traps if the enumeration already holds the maximum of `3 * 2 ** 30`
-    /// keys and `key` is new.
+    /// Traps if the enumeration already holds the maximum of `2 ** 31` keys
+    /// and `key` is new.
     ///
     /// Runtime: O(log(n)) amortized; O(n) when the key array has to grow.
     public func insert(self : BlobEnumeration, key : Blob) : (Bool, Nat) {
@@ -402,23 +436,13 @@ module {
 
       func ins(tree : Tree) : Tree {
         switch tree {
-          case (?(#B, left, y, right)) {
+          case (?(left, w, right)) {
+            let y = indexOf(w);
             let res = Prim.blobCompare(key, array[y]);
             if (res < 0) {
-              lbalance(ins(left), y, right);
+              if (w & 1 == 0) lbalance(ins(left), w, right) else ?(ins(left), w, right);
             } else if (res > 0) {
-              rbalance(left, y, ins(right));
-            } else {
-              index := y;
-              tree;
-            };
-          };
-          case (?(#R, left, y, right)) {
-            let res = Prim.blobCompare(key, array[y]);
-            if (res < 0) {
-              ?(#R, ins(left), y, right);
-            } else if (res > 0) {
-              ?(#R, left, y, ins(right));
+              if (w & 1 == 0) rbalance(left, w, ins(right)) else ?(left, w, ins(right));
             } else {
               index := y;
               tree;
@@ -426,15 +450,12 @@ module {
           };
           case (null) {
             index := size;
-            ?(#R, null, size, null);
+            ?(null, redWord(size), null);
           };
         };
       };
 
-      self.tree := switch (ins(self.tree)) {
-        case (?(#R, left, y, right)) ?(#B, left, y, right);
-        case other other;
-      };
+      self.tree := blackRoot(ins(self.tree));
 
       if (index == size) {
         if (size == array.size()) {
@@ -458,8 +479,8 @@ module {
     /// assert(e.add("aaa") == 1);
     /// assert(e.add("abc") == 0);
     /// ```
-    /// Traps if the enumeration already holds the maximum of `3 * 2 ** 30`
-    /// keys and `key` is new.
+    /// Traps if the enumeration already holds the maximum of `2 ** 31` keys
+    /// and `key` is new.
     ///
     /// Runtime: O(log(n)) amortized; O(n) when the key array has to grow.
     public func add(self : BlobEnumeration, key : Blob) : Nat = insert(self, key).1;
@@ -481,7 +502,8 @@ module {
       var t = self.tree;
       loop {
         switch t {
-          case (?(_, l, y, r)) {
+          case (?(l, w, r)) {
+            let y = indexOf(w);
             let res = Prim.blobCompare(key, array[y]);
             if (res < 0) {
               t := l;
