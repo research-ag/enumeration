@@ -41,16 +41,12 @@ module {
   // The index stored in a node's word.
   func indexOf(w : Nat32) : Nat = Prim.nat32ToNat(w >> 1);
 
-  // The word of a new (red) node for `index`. Traps if the index does not
-  // fit into the 31 bits next to the color.
-  func redWord(index : Nat) : Nat32 {
-    // The wrap needs no bounds check: `next_size` already traps before the
-    // index reaches 2 ** 32. Testing bit 31 on the Nat32 also avoids comparing
-    // with 2 ** 31, which is not a compact Nat on the 32-bit heap.
-    let i = Prim.intToNat32Wrap(index);
-    if (i & 0x8000_0000 != 0) Runtime.trap("Enumeration is full (2 ** 31 keys)");
-    i << 1 | 1;
-  };
+  // The word of a new (red) node for `index`. The index is below the array's
+  // capacity, at most 2 ** 31 (see `next_size`), so it fits into the 31 bits
+  // next to the color. Inserting into a full enumeration of 2 ** 31 keys
+  // computes a wrong word here, but then traps in `next_size`, which reverts
+  // the whole message.
+  func redWord(index : Nat) : Nat32 = Prim.intToNat32Wrap(index) << 1 | 1;
 
   // ── Red-black tree / array-growth helpers shared by both modules ──
 
@@ -102,17 +98,18 @@ module {
     case null t;
   };
 
-  // Returns the next array capacity, growing the current size `n_` by a factor
-  // of roughly sqrt(2) and rounding to a multiple of a power of two.
-  // Traps if n_ == 0 or n_ >= 3 * 2 ** 30 (see inline assertions below); the
-  // enumeration itself stops earlier, at 2 ** 31 keys (see `redWord`).
+  // Returns the next array capacity when the array of `n_` slots is full,
+  // growing by a factor of roughly sqrt(2) and rounding to a multiple of a
+  // power of two: 1, 2, 3, 4, 6, 8, 12, ..., 3 * 2 ** 29, 2 ** 31.
+  // Traps when the array already has 2 ** 31 slots: an enumeration holds at
+  // most 2 ** 31 keys, so that a key's index fits into the 31 bits of a node's
+  // word next to the color. Also traps if n_ == 0.
   func next_size(n_ : Nat) : Nat {
     if (n_ == 1) return 2;
-    let n = n_.toNat32(); // traps if n >= 2 ** 32
+    let n = Prim.intToNat32Wrap(n_); // no wrap: the capacity is at most 2 ** 31
+    if (n & 0x8000_0000 != 0) Runtime.trap("Enumeration is full (2 ** 31 keys)");
     let s = 30 - Nat32.bitcountLeadingZero(n); // traps if n == 0
-    let m = ((n >> s) +% 1) << s;
-    assert (m != 0); // traps if n >= 3 * 2 ** 30
-    m.toNat();
+    (((n >> s) +% 1) << s).toNat();
   };
 
   /// Bidirectional enumeration of keys of type `K` in the order they are added.
