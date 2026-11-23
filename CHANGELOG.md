@@ -1,6 +1,6 @@
 # Enumeration changelog
 
-## Next
+## 0.3.1
 
 - `insert` and `add` no longer allocate a closure and a heap box per call, and adding a key that is already present returns without rebuilding the path to it. Inserting a new key takes 11–12% fewer instructions and allocates 15–16% less; adding a present key takes 40–44% fewer instructions and allocates nothing (measured with moc 2.2.4).
 - New benchmark `bench/insert.bench.mo` (new and present keys).
