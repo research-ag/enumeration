@@ -1,5 +1,10 @@
 # Enumeration changelog
 
+## Next
+
+- `insert` and `add` no longer allocate a closure and a heap box per call, and adding a key that is already present returns without rebuilding the path to it. With moc 2.0.0, inserting a new key takes 11% fewer instructions and allocates 15% less; adding a present key takes 40–43% fewer instructions and allocates 94% less (0 bytes with moc ≥ 2.2.2).
+- New benchmark `bench/insert.bench.mo` (new and present keys).
+
 ## 0.3.0
 
 - **Breaking (stable type):** a tree node stores its index and its color in one `Nat32` field (`index << 1 | red`) instead of a separate color field: `Tree` is now `?(Tree, Nat32, Tree)`. A node takes 48 instead of 56 bytes on the 64-bit heap and 20 instead of 24 bytes on the 32-bit heap (−14% to −17% memory). A canister that keeps an enumeration in a stable variable needs a migration function to upgrade; see "Upgrading from 0.2.x" in the README.
