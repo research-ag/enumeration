@@ -225,12 +225,12 @@ We compare `Enumeration<K>` against other maps of type `K -> Nat`:
 The functionality of these other maps is not exactly the same but sufficiently overlaps with Enumeration that a comparison is possible. It should be noted that the other maps do not have the inverse map `Nat -> K` like Enumeration does. On the other hand, they offer deletion which Enumeration does not. However, all of them map `K -> Nat`, hence we can compare insertion and lookup operations both in terms of instructions and memory used.
 
 All measurements use N = 4,096 random 32-byte `Blob` keys and were taken with `mops bench` on pocket-ic 15.0.0.
-The benchmark code is in [`bench/`](https://github.com/research-ag/enumeration/tree/main/bench): [`copy.bench.mo`](https://github.com/research-ag/enumeration/blob/main/bench/copy.bench.mo) for memory, [`lookup.bench.mo`](https://github.com/research-ag/enumeration/blob/main/bench/lookup.bench.mo) for lookups [`build.bench.mo`](https://github.com/research-ag/enumeration/blob/main/bench/build.bench.mo) for insertions and [`insert.bench.mo`](https://github.com/research-ag/enumeration/blob/main/bench/insert.bench.mo) for inserting new and present keys.
+The benchmark code is in [`bench/`](https://github.com/research-ag/enumeration/tree/main/bench): [`copy.bench.mo`](https://github.com/research-ag/enumeration/blob/main/bench/copy.bench.mo) for memory, [`lookup.bench.mo`](https://github.com/research-ag/enumeration/blob/main/bench/lookup.bench.mo) for lookups, [`build.bench.mo`](https://github.com/research-ag/enumeration/blob/main/bench/build.bench.mo) for insertions and [`insert.bench.mo`](https://github.com/research-ag/enumeration/blob/main/bench/insert.bench.mo) for inserting new and present keys.
 Run it with `mops bench` (64-bit heap), or with `[toolchain] moc = "1.16.1"` and `mops bench --gc compacting` (32-bit heap).
 The two heaps:
 
 - 32-bit heap: moc 1.16.1 with legacy persistence and the compacting GC,
-- 64-bit heap: moc 2.0.0 with enhanced orthogonal persistence and the incremental GC.
+- 64-bit heap: moc 2.2.4 with enhanced orthogonal persistence and the incremental GC.
 
 ### Memory
 
@@ -247,7 +247,7 @@ The results are as follows, unit is bytes per entry:
 | 64-bit heap | 48          | 51.6           | 80                          | 56   |
 
 On the 32-bit heap the numbers are the heap left behind after a full garbage collection.
-The incremental GC of moc 2.0.0 offers no such measurement, so on both heaps we also measured the allocation of a structural copy of each data structure (new nodes, keys shared), which allocates exactly its own object graph.
+The incremental GC of moc 2 offers no such measurement, so on both heaps we also measured the allocation of a structural copy of each data structure (new nodes, keys shared), which allocates exactly its own object graph.
 On the 32-bit heap the copies reproduce the numbers above; the 64-bit row comes from the copies.
 `Enumeration<Blob>` and `BlobEnumeration` have the same memory layout.
 
@@ -274,8 +274,8 @@ The results are as follows, unit is instructions per lookup:
 | ------------------- | ----------------- | ------------------- | -------------- | --------------------------- | ---- |
 | hits, 32-bit heap   | 2368              | 2709                | 4395           | 2326                        | 2111 |
 | misses, 32-bit heap | 1719              | 2111                | 4059           | 1672                        | 1178 |
-| hits, 64-bit heap   | 2832              | 3544                | 5967           | 3392                        | 2557 |
-| misses, 64-bit heap | 2048              | 2859                | 5663           | 2699                        | 1401 |
+| hits, 64-bit heap   | 2831              | 3542                | 5966           | 3390                        | 2558 |
+| misses, 64-bit heap | 2045              | 2857                | 5661           | 2697                        | 1401 |
 
 Notes:
 
@@ -292,10 +292,10 @@ The results are as follows, per insertion:
 
 |                              | `BlobEnumeration` | `Enumeration<Blob>` | `Map` (B-tree) | `pure/Map` (red-black tree) | zhus |
 | ---------------------------- | ----------------- | ------------------- | -------------- | --------------------------- | ---- |
-| instructions, 32-bit heap    | 3637              | 4011                | 6295           | 3437                        | 3665 |
-| allocated bytes, 32-bit heap | 381               | 385                 | 93             | 724                         | 64   |
-| instructions, 64-bit heap    | 6041              | 6738                | 8754           | 8957                        | 4278 |
-| allocated bytes, 64-bit heap | 828               | 837                 | 235            | 1772                        | 128  |
+| instructions, 32-bit heap    | 3457              | 3788                | 6295           | 3437                        | 3665 |
+| allocated bytes, 32-bit heap | 297               | 297                 | 93             | 724                         | 64   |
+| instructions, 64-bit heap    | 5208              | 5860                | 8754           | 7523                        | 4278 |
+| allocated bytes, 64-bit heap | 669               | 669                 | 235            | 1374                        | 128  |
 
 ## Design
 
