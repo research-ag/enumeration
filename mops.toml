@@ -17,7 +17,7 @@ map = "9.0.1"
 moc = "1.0.0"
 
 [toolchain]
-moc = "2.0.0"
+moc = "2.2.4"
 pocket-ic = "15.0.0"
 wasm-opt = "133"
 

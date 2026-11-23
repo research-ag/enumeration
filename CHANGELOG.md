@@ -2,8 +2,9 @@
 
 ## Next
 
-- `insert` and `add` no longer allocate a closure and a heap box per call, and adding a key that is already present returns without rebuilding the path to it. With moc 2.0.0, inserting a new key takes 11% fewer instructions and allocates 15% less; adding a present key takes 40–43% fewer instructions and allocates 94% less (0 bytes with moc ≥ 2.2.2).
+- `insert` and `add` no longer allocate a closure and a heap box per call, and adding a key that is already present returns without rebuilding the path to it. Inserting a new key takes 11–12% fewer instructions and allocates 15–16% less; adding a present key takes 40–44% fewer instructions and allocates nothing (measured with moc 2.2.4).
 - New benchmark `bench/insert.bench.mo` (new and present keys).
+- The toolchain and `examples/` use moc 2.2.4 (was 2.0.0).
 
 ## 0.3.0
 
