@@ -99,7 +99,8 @@ module {
   };
 
   // The tree after inserting `key`, and its index: its existing index if it
-  // is present, otherwise `size`, the index of a new node.
+  // is present, otherwise `size`, the index of a new node. If `key` is
+  // present, the tree is returned unchanged.
   func ins<K>(tree : Tree, compare : (K, K) -> Order.Order, array : [var K], key : K, size : Nat) : (Tree, Nat) {
     switch tree {
       case (?(left, w, right)) {
@@ -107,10 +108,12 @@ module {
         switch (compare(key, array[y])) {
           case (#less) {
             let (newLeft, index) = ins(left, compare, array, key, size);
+            if (index != size) return (tree, index); // key present: subtree unchanged
             (if (w & 1 == 0) lbalance(newLeft, w, right) else ?(newLeft, w, right), index);
           };
           case (#greater) {
             let (newRight, index) = ins(right, compare, array, key, size);
+            if (index != size) return (tree, index); // key present: subtree unchanged
             (if (w & 1 == 0) rbalance(left, w, newRight) else ?(left, w, newRight), index);
           };
           case (#equal) (tree, y);
@@ -128,9 +131,11 @@ module {
         let res = Prim.blobCompare(key, array[y]);
         if (res < 0) {
           let (newLeft, index) = insBlob(left, array, key, size);
+          if (index != size) return (tree, index); // key present: subtree unchanged
           (if (w & 1 == 0) lbalance(newLeft, w, right) else ?(newLeft, w, right), index);
         } else if (res > 0) {
           let (newRight, index) = insBlob(right, array, key, size);
+          if (index != size) return (tree, index); // key present: subtree unchanged
           (if (w & 1 == 0) rbalance(left, w, newRight) else ?(left, w, newRight), index);
         } else {
           (tree, y);
@@ -214,22 +219,21 @@ module {
       let size = self.size_;
 
       let (tree, index) = ins(self.tree, compare, array, key, size);
+      if (index != size) return (false, index);
       self.tree := blackRoot(tree);
 
-      if (index == size) {
-        if (size == array.size()) {
-          // Reserve slots need to hold some valid `K`; they are never read
-          // (`at`/`get` are bounds-checked against `size_`). We reuse the first
-          // stored key `array[0]`, except on the very first insertion when no
-          // element exists yet, where we use `key` itself.
-          let filler = if (size == 0) key else array[0];
-          self.array := VarArray.tabulate<K>(if (size == 0) 1 else next_size(size), func(i) = if (i < size) { array[i] } else { filler });
-        };
-        self.array[index] := key;
-        self.size_ += 1;
+      if (size == array.size()) {
+        // Reserve slots need to hold some valid `K`; they are never read
+        // (`at`/`get` are bounds-checked against `size_`). We reuse the first
+        // stored key `array[0]`, except on the very first insertion when no
+        // element exists yet, where we use `key` itself.
+        let filler = if (size == 0) key else array[0];
+        self.array := VarArray.tabulate<K>(if (size == 0) 1 else next_size(size), func(i) = if (i < size) { array[i] } else { filler });
       };
+      self.array[index] := key;
+      self.size_ += 1;
 
-      (index == size, index);
+      (true, index);
     };
 
     /// Add `key` to the enumeration and return its index: a new index (equal to
@@ -454,17 +458,16 @@ module {
       let size = self.size_;
 
       let (tree, index) = insBlob(self.tree, array, key, size);
+      if (index != size) return (false, index);
       self.tree := blackRoot(tree);
 
-      if (index == size) {
-        if (size == array.size()) {
-          self.array := VarArray.tabulate<Blob>(next_size(size), func(i) = if (i < size) { array[i] } else { "" });
-        };
-        self.array[index] := key;
-        self.size_ += 1;
+      if (size == array.size()) {
+        self.array := VarArray.tabulate<Blob>(next_size(size), func(i) = if (i < size) { array[i] } else { "" });
       };
+      self.array[index] := key;
+      self.size_ += 1;
 
-      (index == size, index);
+      (true, index);
     };
 
     /// Add `key` to the enumeration and return its index: a new index (equal to
