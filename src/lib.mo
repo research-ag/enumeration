@@ -98,6 +98,48 @@ module {
     case null t;
   };
 
+  // The tree after inserting `key`, and its index: its existing index if it
+  // is present, otherwise `size`, the index of a new node.
+  func ins<K>(tree : Tree, compare : (K, K) -> Order.Order, array : [var K], key : K, size : Nat) : (Tree, Nat) {
+    switch tree {
+      case (?(left, w, right)) {
+        let y = indexOf(w);
+        switch (compare(key, array[y])) {
+          case (#less) {
+            let (newLeft, index) = ins(left, compare, array, key, size);
+            (if (w & 1 == 0) lbalance(newLeft, w, right) else ?(newLeft, w, right), index);
+          };
+          case (#greater) {
+            let (newRight, index) = ins(right, compare, array, key, size);
+            (if (w & 1 == 0) rbalance(left, w, newRight) else ?(left, w, newRight), index);
+          };
+          case (#equal) (tree, y);
+        };
+      };
+      case null (?(null, redWord(size), null), size);
+    };
+  };
+
+  // `ins` for `Blob` keys, comparing with `Prim.blobCompare`.
+  func insBlob(tree : Tree, array : [var Blob], key : Blob, size : Nat) : (Tree, Nat) {
+    switch tree {
+      case (?(left, w, right)) {
+        let y = indexOf(w);
+        let res = Prim.blobCompare(key, array[y]);
+        if (res < 0) {
+          let (newLeft, index) = insBlob(left, array, key, size);
+          (if (w & 1 == 0) lbalance(newLeft, w, right) else ?(newLeft, w, right), index);
+        } else if (res > 0) {
+          let (newRight, index) = insBlob(right, array, key, size);
+          (if (w & 1 == 0) rbalance(left, w, newRight) else ?(left, w, newRight), index);
+        } else {
+          (tree, y);
+        };
+      };
+      case null (?(null, redWord(size), null), size);
+    };
+  };
+
   // Returns the next array capacity when the array of `n_` slots is full,
   // growing by a factor of roughly sqrt(2) and rounding to a multiple of a
   // power of two: 1, 2, 3, 4, 6, 8, 12, ..., 3 * 2 ** 29, 2 ** 31.
@@ -171,29 +213,8 @@ module {
       let array = self.array;
       let size = self.size_;
 
-      var index = size;
-
-      func ins(tree : Tree) : Tree {
-        switch tree {
-          case (?(left, w, right)) {
-            let y = indexOf(w);
-            switch (compare(key, array[y])) {
-              case (#less) if (w & 1 == 0) lbalance(ins(left), w, right) else ?(ins(left), w, right);
-              case (#greater) if (w & 1 == 0) rbalance(left, w, ins(right)) else ?(left, w, ins(right));
-              case (#equal) {
-                index := y;
-                tree;
-              };
-            };
-          };
-          case (null) {
-            index := size;
-            ?(null, redWord(size), null);
-          };
-        };
-      };
-
-      self.tree := blackRoot(ins(self.tree));
+      let (tree, index) = ins(self.tree, compare, array, key, size);
+      self.tree := blackRoot(tree);
 
       if (index == size) {
         if (size == array.size()) {
@@ -432,30 +453,8 @@ module {
       let array = self.array;
       let size = self.size_;
 
-      var index = size;
-
-      func ins(tree : Tree) : Tree {
-        switch tree {
-          case (?(left, w, right)) {
-            let y = indexOf(w);
-            let res = Prim.blobCompare(key, array[y]);
-            if (res < 0) {
-              if (w & 1 == 0) lbalance(ins(left), w, right) else ?(ins(left), w, right);
-            } else if (res > 0) {
-              if (w & 1 == 0) rbalance(left, w, ins(right)) else ?(left, w, ins(right));
-            } else {
-              index := y;
-              tree;
-            };
-          };
-          case (null) {
-            index := size;
-            ?(null, redWord(size), null);
-          };
-        };
-      };
-
-      self.tree := blackRoot(ins(self.tree));
+      let (tree, index) = insBlob(self.tree, array, key, size);
+      self.tree := blackRoot(tree);
 
       if (index == size) {
         if (size == array.size()) {
